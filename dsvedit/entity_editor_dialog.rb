@@ -24,7 +24,9 @@ class EntityEditorDialog < Qt::Dialog
     end
     (0..max_type).each do |i|
       description = ENTITY_TYPE_DESCRIPTIONS[i] || "Unused"
-      @ui.type.addItem("%02X %s" % [i, description])
+	  if description != "Unused"
+        @ui.type.addItem("%02X %s" % [i, description])
+	  end
     end
     
     @room = room
@@ -93,10 +95,12 @@ class EntityEditorDialog < Qt::Dialog
       if type == ENEMY_ENTITY_TYPE
         if subtype < @game.enemy_dnas.length
           subtype_name = @game.enemy_dnas[subtype].name
+		else
+		  subtype_name = "Crash"
         end
       elsif type == SPECIAL_OBJECT_ENTITY_TYPE
         subtype_name = (game.special_object_docs[subtype] || " ").lines.first.strip[0..100]
-      elsif type == PICKUP_ENTITY_TYPE || (type == 7 && ["por", "ooe"].include?(GAME)) || (type == 6 && GAME == "por")
+      elsif type == PICKUP_ENTITY_TYPE || type == PICKUP_ENTITY_GOOD_END_TYPE || type == PICKUP_ENTITY_ALL_SOUL_TYPE || (type == 7 && ["por", "ooe"].include?(GAME)) || (type == 6 && GAME == "por")
         if GAME == "hod"
           if PICKUP_SUBTYPES_FOR_ITEMS.include?(subtype)
             subtype_name = ITEM_TYPES[subtype-3][:name]
@@ -108,7 +112,7 @@ class EntityEditorDialog < Qt::Dialog
         elsif subtype == 0
           subtype_name = "Heart"
         elsif subtype == 1
-          subtype_name = "Money"
+          subtype_name = "钱"
         elsif PICKUP_SUBTYPES_FOR_ITEMS.include?(subtype)
           if GAME == "ooe"
             subtype_name = "Item"
@@ -116,7 +120,15 @@ class EntityEditorDialog < Qt::Dialog
             subtype_name = ITEM_TYPES[subtype-2][:name]
           end
         elsif PICKUP_SUBTYPES_FOR_SKILLS.include?(subtype)
-          subtype_name = "Skill"
+		  if subtype == 5
+		    subtype_name = "红魂"
+		  elsif subtype == 6
+		    subtype_name = "蓝魂"
+		  elsif subtype == 7
+		    subtype_name = "黄魂"
+		  elsif subtype == 8
+		    subtype_name = "青魂"
+		  end 
         else
           subtype_name = "Crash"
         end
@@ -131,9 +143,17 @@ class EntityEditorDialog < Qt::Dialog
         when 3
           subtype_name = "Drops item"
         end
+      elsif type == CANDLE_ENTITY_TYPE && GAME == "aos"
+        if subtype == 0
+          subtype_name = "此项无需选择"
+        else
+		  subtype_name = "Crash"
+        end
       end
-      
-      @ui.subtype.addItem("%02X %s" % [subtype, subtype_name])
+      if (subtype_name != "Crash" && subtype_name != nil && subtype_name != "")
+       @ui.subtype.addItem("%02X %s" % [subtype, subtype_name])
+	  end
+	  
     end
     
     @ui.subtype.setCurrentIndex(@entity.subtype)
