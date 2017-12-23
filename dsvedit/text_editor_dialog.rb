@@ -13,7 +13,7 @@ class TextEditor < Qt::Dialog
     
     @fs = fs
     
-    @text_database = TextDatabase.new(fs)
+    @text_database = TextDatabase.new(fs, nil)
     
     TEXT_REGIONS.each do |region_name, text_index_range|
       tab = Qt::Widget.new
