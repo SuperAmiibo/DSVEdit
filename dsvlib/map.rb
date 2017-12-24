@@ -41,7 +41,6 @@ class Map
     (0..number_of_tiles-1).each do |i|
       tile_line_data = fs.read(map_tile_line_data_ram_pointer + i).unpack("C").first
       tile_metadata = fs.read(map_tile_metadata_ram_pointer + i*4, 4).unpack("vCC")
-      
       @tiles << MapTile.new(tile_metadata, tile_line_data)
     end
     
@@ -510,13 +509,13 @@ class DoSMapTile
   end
   
   def read_from_rom
-    @top_secret     = (tile_line_data & 0b1100) >> 2 == 1
-    @top_door       = (tile_line_data & 0b1100) >> 2 == 2
-    @top_wall       = (tile_line_data & 0b1100) >> 2 == 3
-    @left_secret    =  tile_line_data & 0b0011       == 1
-    @left_door      =  tile_line_data & 0b0011       == 2
-    @left_wall      =  tile_line_data & 0b0011       == 3
-
+    @top_secret     = (tile_line_data & 0b00001100) >> 2 == 1
+    @top_door       = (tile_line_data & 0b00001100) >> 2 == 2
+    @top_wall       = (tile_line_data & 0b00001100) >> 2 == 3
+    @left_secret    =  tile_line_data & 0b00000011       == 1
+    @left_door      =  tile_line_data & 0b00000011       == 2
+    @left_wall      =  tile_line_data & 0b00000011       == 3
+    
     @is_blank       = tile_metadata == 0xFFFF
     
     unless is_blank

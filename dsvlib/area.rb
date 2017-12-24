@@ -37,10 +37,26 @@ class Area
       
       sector_index += 1
     end
-    
-    if HARDCODED_ROOM_IDS
-      sector = Sector.new(self, sector_index, nil, game, hardcoded_room_pointers: HARDCODED_ROOM_IDS)
-      @sectors << sector
+    if REGION == :cn
+      if HARDCODED_UNUSED_ROOM_IDS
+        sector = Sector.new(self, sector_index, nil, game, hardcoded_room_pointers: HARDCODED_UNUSED_ROOM_IDS)
+        @sectors << sector
+        sector_index += 1
+      end
+      if HARDCODED_BOSSRUSH_ROOM_IDS
+        sector = Sector.new(self, sector_index, nil, game, hardcoded_room_pointers: HARDCODED_BOSSRUSH_ROOM_IDS)
+        @sectors << sector
+        sector_index += 1
+      end
+      if HARDCODED_OTHER_ROOM_IDS
+        sector = Sector.new(self, sector_index, nil, game, hardcoded_room_pointers: HARDCODED_OTHER_ROOM_IDS)
+        @sectors << sector
+      end
+    else
+      if HARDCODED_ROOM_IDS
+        sector = Sector.new(self, sector_index, nil, game, hardcoded_room_pointers: HARDCODED_ROOM_IDS)
+        @sectors << sector
+      end
     end
   end
   

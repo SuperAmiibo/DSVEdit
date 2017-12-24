@@ -96,8 +96,10 @@ class DSVEdit < Qt::MainWindow
     @ui.room_graphics_view.setFocus()
     connect(@room_graphics_scene, SIGNAL("clicked(int, int, const Qt::MouseButton&)"), self, SLOT("room_clicked(int, int, const Qt::MouseButton&)"))
     
+	width = @ui.map_graphics_view.width
+	height = @ui.map_graphics_view.height
     @map_graphics_scene = ClickableGraphicsScene.new
-    @map_graphics_scene.setSceneRect(0, 0, 64*4+1, 48*4+1)
+    @map_graphics_scene.setSceneRect(-2, -4, 64*4+1, 48*4+1)
     @ui.map_graphics_view.scale(2, 2)
     @ui.map_graphics_view.setScene(@map_graphics_scene)
     @map_graphics_scene.setBackgroundBrush(MapEditorDialog::BACKGROUND_BRUSH)
@@ -218,6 +220,9 @@ class DSVEdit < Qt::MainWindow
     @ui.set_as_starting_room.setEnabled(false);
     @ui.copy_room_pointer.setEnabled(false);
     @ui.edit_map.setEnabled(false);
+    
+    @ui.map_graphics_view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    @ui.map_graphics_view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     
   end
   
@@ -472,13 +477,29 @@ class DSVEdit < Qt::MainWindow
     @ui.area.setCurrentIndex(@area_index)
     @ui.sector.clear()
     AREA_INDEX_TO_OVERLAY_INDEX[@area_index].keys.each do |sector_index|
-      if @area.sectors[sector_index].is_hardcoded
-        sector_text = "Hardcoded rooms"
+      if REGION == :cn
+        if @area.sectors[sector_index].is_hardcoded
+          sector_text = "%02X" % sector_index
+          if SECTOR_INDEX_TO_SECTOR_NAME[@area_index]
+            sector_name = SECTOR_INDEX_TO_SECTOR_NAME[@area_index][sector_index]
+            sector_text << " #{sector_name}"
+          end
+        else
+          sector_text = "%02X" % sector_index
+          if SECTOR_INDEX_TO_SECTOR_NAME[@area_index]
+            sector_name = SECTOR_INDEX_TO_SECTOR_NAME[@area_index][sector_index]
+            sector_text << " #{sector_name}"
+          end
+        end
       else
-        sector_text = "%02X" % sector_index
-        if SECTOR_INDEX_TO_SECTOR_NAME[@area_index]
-          sector_name = SECTOR_INDEX_TO_SECTOR_NAME[@area_index][sector_index]
-          sector_text << " #{sector_name}"
+        if @area.sectors[sector_index].is_hardcoded
+          sector_text = "Hardcoded rooms"
+        else
+          sector_text = "%02X" % sector_index
+          if SECTOR_INDEX_TO_SECTOR_NAME[@area_index]
+            sector_name = SECTOR_INDEX_TO_SECTOR_NAME[@area_index][sector_index]
+            sector_text << " #{sector_name}"
+          end
         end
       end
       

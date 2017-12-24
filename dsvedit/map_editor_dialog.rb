@@ -2,7 +2,7 @@
 require_relative 'ui_map_editor'
 
 class MapEditorDialog < Qt::Dialog
-  BACKGROUND_BRUSH = Qt::Brush.new(Qt::Color.new(200, 200, 200, 255))
+  BACKGROUND_BRUSH = Qt::Brush.new(Qt::Color.new(127, 127, 127, 255))
   
   slots "edit_map_tile(int, int, const Qt::MouseButton&)"
   slots "select_tile(int, int, const Qt::MouseButton&)"
@@ -27,9 +27,12 @@ class MapEditorDialog < Qt::Dialog
       @map = Map.new(area_index, sector_index, game)
     end
     
+    @ui.map_graphics_view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    @ui.map_graphics_view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    
     @map_graphics_scene = ClickableGraphicsScene.new
-    @map_graphics_scene.setSceneRect(0, 0, 250, 200)
-    @ui.map_graphics_view.scale(2, 2)
+    @map_graphics_scene.setSceneRect(0, -3, 64*4+1, 48*4+1)
+    @ui.map_graphics_view.scale(3, 3)
     @ui.map_graphics_view.setScene(@map_graphics_scene)
     @map_graphics_scene.setBackgroundBrush(BACKGROUND_BRUSH)
     connect(@map_graphics_scene, SIGNAL("clicked(int, int, const Qt::MouseButton&)"), self, SLOT("edit_map_tile(int, int, const Qt::MouseButton&)"))
