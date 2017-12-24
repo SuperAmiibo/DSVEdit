@@ -509,12 +509,12 @@ class DoSMapTile
   end
   
   def read_from_rom
-    @top_secret     = (tile_line_data & 0b00001100) >> 2 == 1
-    @top_door       = (tile_line_data & 0b00001100) >> 2 == 2
-    @top_wall       = (tile_line_data & 0b00001100) >> 2 == 3
-    @left_secret    =  tile_line_data & 0b00000011       == 1
-    @left_door      =  tile_line_data & 0b00000011       == 2
-    @left_wall      =  tile_line_data & 0b00000011       == 3
+    @top_secret     = (tile_line_data & 0b1100) >> 2 == 1
+    @top_door       = (tile_line_data & 0b1100) >> 2 == 2
+    @top_wall       = (tile_line_data & 0b1100) >> 2 == 3
+    @left_secret    =  tile_line_data & 0b0011       == 1
+    @left_door      =  tile_line_data & 0b0011       == 2
+    @left_wall      =  tile_line_data & 0b0011       == 3
     
     @is_blank       = tile_metadata == 0xFFFF
     
