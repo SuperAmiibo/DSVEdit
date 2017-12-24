@@ -826,6 +826,7 @@ class DSVEdit < Qt::MainWindow
     @map_graphics_scene.clear()
     
     @map = game.get_map(@area_index, @sector_index)
+    
     if GAME == "dos" || GAME == "aos"
       chunky_png_img = @renderer.render_map(@map, scale=1, hardcoded_transition_rooms=game.get_transition_rooms())
     else
