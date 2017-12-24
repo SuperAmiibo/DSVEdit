@@ -95,8 +95,8 @@ class EntityEditorDialog < Qt::Dialog
       if type == ENEMY_ENTITY_TYPE
         if subtype < @game.enemy_dnas.length
           subtype_name = @game.enemy_dnas[subtype].name
-		else
-		  subtype_name = "Crash"
+        else
+          subtype_name = "Crash"
         end
       elsif type == SPECIAL_OBJECT_ENTITY_TYPE
         subtype_name = (game.special_object_docs[subtype] || " ").lines.first.strip[0..100]
@@ -120,15 +120,15 @@ class EntityEditorDialog < Qt::Dialog
             subtype_name = ITEM_TYPES[subtype-2][:name]
           end
         elsif PICKUP_SUBTYPES_FOR_SKILLS.include?(subtype)
-		  if subtype == 5
-		    subtype_name = "红魂"
-		  elsif subtype == 6
-		    subtype_name = "蓝魂"
-		  elsif subtype == 7
-		    subtype_name = "黄魂"
-		  elsif subtype == 8
-		    subtype_name = "青魂"
-		  end 
+          if subtype == 5
+            subtype_name = "红魂"
+          elsif subtype == 6
+            subtype_name = "蓝魂"
+          elsif subtype == 7
+            subtype_name = "黄魂"
+          elsif subtype == 8
+            subtype_name = "青魂"
+          end 
         else
           subtype_name = "Crash"
         end
@@ -147,12 +147,12 @@ class EntityEditorDialog < Qt::Dialog
         if subtype == 0
           subtype_name = "此项无需选择"
         else
-		  subtype_name = "Crash"
+          subtype_name = "Crash"
         end
       end
       if (subtype_name != "Crash" && subtype_name != nil && subtype_name != "")
-       @ui.subtype.addItem("%02X %s" % [subtype, subtype_name])
-	  end
+        @ui.subtype.addItem("%02X %s" % [subtype, subtype_name])
+      end
 	  
     end
     
