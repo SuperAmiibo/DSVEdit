@@ -56,13 +56,20 @@ class Layer
   
   def read_from_layer_metadata
     if layer_metadata_ram_pointer == 0
-      return # TODO
+      # Empty GBA layer.
+      @width = @height = 1
+      @tileset_type =
+        @tileset_pointer =
+        @collision_tileset_pointer = 0
+      @layer_tiledata_ram_start_offset = nil
+      return
     end
     
     @width, @height, @tileset_type,
       @tileset_pointer,
       @collision_tileset_pointer,
       @layer_tiledata_ram_start_offset = fs.read(layer_metadata_ram_pointer, 16).unpack("CCvVVV")
+    
     if width > 15 || height > 15
       raise LayerReadError.new("Invalid layer size: #{width}x#{height}")
     end
@@ -70,7 +77,12 @@ class Layer
   
   def read_from_layer_tiledata
     if layer_tiledata_ram_start_offset.nil?
-      return # TODO
+      # Empty GBA layer.
+      @tiles = []
+      (@height*SCREEN_HEIGHT_IN_TILES*@width*SCREEN_WIDTH_IN_TILES).times do
+        @tiles << LayerTile.new.from_game_data(0)
+      end
+      return
     end
     
     tile_data_string = fs.read(layer_tiledata_ram_start_offset, SIZE_OF_A_SCREEN_IN_BYTES*width*height)
@@ -88,7 +100,22 @@ class Layer
     @height = [@height, 15].min
     @height = [@height, 1].max
     
-    old_width, old_height = fs.read(layer_metadata_ram_pointer, 2).unpack("C*")
+    if layer_metadata_ram_pointer == 0
+      # Empty GBA layer.
+      old_width = old_height = 1
+      
+      # First detect if the user has changed this layer in a way that it actually needs to have free space assigned for the tile list.
+      if @width == old_width && @height == old_height && @tileset_type == 0 && @tileset_pointer == 0 && @collision_tileset_pointer == 0 && @layer_tiledata_ram_start_offset == nil
+        # No changes made that require free space. Just write changes to the layer list entry and return.
+        write_layer_list_entry_to_rom()
+        return
+      else
+        # Assign layer metadata in free space.
+        @layer_metadata_ram_pointer = fs.get_free_space(16, nil)
+      end
+    else
+      old_width, old_height = fs.read(layer_metadata_ram_pointer, 2).unpack("C*")
+    end
     
     if layer_tiledata_ram_start_offset.nil?
       # This is a newly added layer.
@@ -156,6 +183,13 @@ class Layer
     
     fs.write(layer_metadata_ram_pointer, [width, height, tileset_type].pack("CCv"))
     fs.write(layer_metadata_ram_pointer+4, [tileset_pointer, collision_tileset_pointer].pack("VV"))
+    write_layer_list_entry_to_rom()
+    
+    tile_data = tiles.map(&:to_tile_data).pack("v*")
+    fs.write(layer_tiledata_ram_start_offset, tile_data)
+  end
+  
+  def write_layer_list_entry_to_rom
     fs.write(layer_list_entry_ram_pointer, [z_index].pack("C"))
     if SYSTEM == :nds
       fs.write(layer_list_entry_ram_pointer+1, [scroll_mode].pack("C"))
@@ -174,15 +208,15 @@ class Layer
       fs.write(layer_list_entry_ram_pointer+2, [bg_control].pack("v"))
       fs.write(layer_list_entry_ram_pointer+4, [layer_metadata_ram_pointer].pack("V"))
     end
-    tile_data = tiles.map(&:to_tile_data).pack("v*")
-    fs.write(layer_tiledata_ram_start_offset, tile_data)
   end
   
   def self.layer_list_entry_size
     if SYSTEM == :nds
       16
-    else
+    elsif GAME == "aos"
       12
+    else # HoD
+      8
     end
   end
   

@@ -126,27 +126,23 @@ class Room
         
         layer = Layer.new(self, layer_list_ram_pointer + i*12, fs)
         layer.read_from_rom()
-        if layer.layer_metadata_ram_pointer != 0 # TODO
-          @layers << layer
-          if color_effects & 0xC0 == 0x40 && color_effects & 1<<(i+1) > 0
-            layer.opacity = 0x0F # HACK
-          end
+        @layers << layer
+        if color_effects & 0xC0 == 0x40 && color_effects & 1<<(i+1) > 0
+          layer.opacity = 0x0F # HACK
         end
       elsif GAME == "hod"
         break if i == 3 # Maximum of 3 layers per room.
         
         layer_data = fs.read(layer_list_ram_pointer + i*8).unpack("VV")
-        if layer_data[1] == 0
+        if layer_data.all?{|x| x == 0}
           break
         end
         
         layer = Layer.new(self, layer_list_ram_pointer + i*8, fs)
         layer.read_from_rom()
-        if layer.layer_metadata_ram_pointer != 0 # TODO
-          @layers << layer
-          if color_effects & 0xC0 == 0x40 && color_effects & 1<<(i+1) > 0
-            layer.opacity = 0x0F # HACK
-          end
+        @layers << layer
+        if color_effects & 0xC0 == 0x40 && color_effects & 1<<(i+1) > 0
+          layer.opacity = 0x0F # HACK
         end
       end
       
@@ -726,33 +722,24 @@ class Room
   end
   
   def add_new_layer
+    if SYSTEM == :gba
+      # All rooms in AoS and HoD already have the maximum of 3 layers. There's no way to add more.
+      return
+    end
+    
     sector.load_necessary_overlay()
     
     if layers.length >= Room.max_number_of_layers
       raise "Can't add new layer; room already has #{Room.max_number_of_layers} layers."
     end
     
-    if SYSTEM == :nds
-      overlay = fs.overlays[overlay_id]
-      overlay_ram_end = overlay[:ram_start_offset]+overlay[:size]
-      
-      if layers.length == 0 && layer_list_ram_pointer >= overlay_ram_end
-        # Invalid room where layer list pointer points outside the overlay file. So we create a blank layer list in free space first.
-        @layer_list_ram_pointer = fs.get_free_space(Layer.layer_list_entry_size*4, overlay_id)
-        fs.write(room_metadata_ram_pointer+2*4, [@layer_list_ram_pointer].pack("V"))
-        self.write_to_rom()
-      end
-    else
-      # On GBA the layer list doesn't just have free space for us to add layers up to 4, so we first need to move the layer list into fre space.
-      new_num_layers = layers.length + 1
-      @layer_list_ram_pointer = fs.get_free_space(Layer.layer_list_entry_size*new_num_layers)
+    overlay = fs.overlays[overlay_id]
+    overlay_ram_end = overlay[:ram_start_offset]+overlay[:size]
+    
+    if layers.length == 0 && layer_list_ram_pointer >= overlay_ram_end
+      # Invalid room where layer list pointer points outside the overlay file. So we create a blank layer list in free space first.
+      @layer_list_ram_pointer = fs.get_free_space(Layer.layer_list_entry_size*4, overlay_id)
       fs.write(room_metadata_ram_pointer+2*4, [@layer_list_ram_pointer].pack("V"))
-      
-      layers.each_with_index do |layer, i|
-        layer.layer_list_entry_ram_pointer = layer_list_ram_pointer + i*Layer.layer_list_entry_size
-        layer.write_to_rom()
-      end
-      
       self.write_to_rom()
     end
     
@@ -764,10 +751,6 @@ class Room
     new_layer.main_gfx_page_index = 0x00
     new_layer.opacity = 0x1F
     new_layer.tileset_type = 0
-    if SYSTEM == :gba
-      new_layer.bg_control = 0x1D48
-      new_layer.tileset_type = 2
-    end
     
     new_layer.layer_metadata_ram_pointer = fs.get_free_space(16, overlay_id)
     
