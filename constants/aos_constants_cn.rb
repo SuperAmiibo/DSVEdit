@@ -477,13 +477,13 @@ REUSED_ENEMY_INFO = {
   0x19 => {palette_offset: 1}, # evil butcher
   0x1C => {init_code: 0x0808801C, palette_offset: 1}, # catoblepas
   0x21 => {init_code: 0x080973CC}, # creaking skull
-  0x22 => {init_code: 0x0807F6F4, palette_offset: 2, gfx_sheet_ptr_index: 1}, # wooden golem
+  0x22 => {init_code: 0x0807F6F4, palette_offset: 2, gfx_sheet_ptr_index: 1, ignore_part_gfx_page: true}, # wooden golem
   0x25 => {palette_offset: 1}, # lilith -> succubus
   0x2B => {palette_offset: 1}, # curly
   0x2D => {palette_offset: 1}, # red crow -> blue crow
   0x2E => {init_code: 0x080BA5BC}, # cockatrice
   0x30 => {init_code: 0x0808F9FC, palette_offset: 2}, # devil
-  0x35 => {init_code: 0x0807F6F4, gfx_sheet_ptr_index: 1}, # golem
+  0x35 => {init_code: 0x0807F6F4, gfx_sheet_ptr_index: 1, ignore_part_gfx_page: true}, # golem
   0x36 => {init_code: 0x08072638}, # manticore
   0x37 => {init_code: 0x08084A6C, palette_offset: 1}, # gremlin => gargoyle
   0x3C => {init_code: 0x0808C5F0}, # great armor
@@ -496,7 +496,7 @@ REUSED_ENEMY_INFO = {
   0x49 => {init_code: 0x080B644C, sprite: 0x081E6774}, # cagnazzo 4DB0F8 4DF1EA
   0x4A => {palette_offset: 1}, # ripper
   0x4B => {init_code: 0x08077C58}, # werejaguar
-  0x50 => {init_code: 0x0807F6F4, palette_offset: 3}, # flesh golem TODO
+  0x50 => {init_code: 0x0807F6F4, palette_offset: 3, ignore_part_gfx_page: true}, # flesh golem
   0x54 => {init_code: 0x08077C58, palette_offset: 1}, # weretiger
   0x58 => {init_code: 0x080AF0A0, palette_offset: 1}, # red minotaur
   0x5B => {init_code: 0x080B644C, palette_offset: 2, sprite: 0x081F2E9C}, # skull millione  2 not sure
@@ -507,7 +507,7 @@ REUSED_ENEMY_INFO = {
   0x62 => {init_code: 0x0806CCE0, palette_offset: 1}, # erinys -> valkyrie
   0x63 => {init_code: 0x080B644C, palette_offset: 1, sprite: 0x0824A334}, # lubicant
   0x64 => {init_code: 0x080BA5BC, palette_offset: 1}, # basilisk
-  0x65 => {init_code: 0x0807F6F4, palette_offset: 1, gfx_sheet_ptr_index: 1}, # iron golem
+  0x65 => {init_code: 0x0807F6F4, palette_offset: 1, gfx_sheet_ptr_index: 1, ignore_part_gfx_page: true}, # iron golem
   0x66 => {init_code: 0x0808F9FC, palette_offset: 1}, # demon lord
   0x67 => {init_code: 0x0808C5F0, palette_offset: 1}, # final guard
   0x68 => {init_code: 0x0808F9FC, palette_offset: 3}, # flame demon
@@ -607,7 +607,10 @@ BEST_SPRITE_OFFSET_FOR_SPECIAL_OBJECT = {
 
 OTHER_SPRITES = [
   COMMON_SPRITE,
-  
+  # soma sprite 080E11C4
+  # soma gfx 081717CC or maybe 081674B8 or maybe 081664B4
+  # soma's gfx list is around 080E11E0?
+  # palette is either 082097D4 (his palette is also the first in 0820B164 but that's not used?)
   {desc: "Breakable walls 1", pointer: 0x084FC904},
   {desc: "Breakable walls 2", pointer: 0x084FC910},
   {desc: "Breakable walls 3", pointer: 0x084FC91C},
