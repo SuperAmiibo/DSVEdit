@@ -8,11 +8,23 @@
   0C,2: 怪物HP上限.
   0E,2: 怪物MP上限.
   10,2: 杀死怪物得到的经验.
-  12,1: 魂稀有??
+  12,1: 出魂概率指数.
+    设置为00时，这个魂不会掉
+    计算出魂概率如下
+
+      普通模式：如果你没有这个魂，分子是6，如果有，分子是3
+      困难模式：如果你没有这个魂，分子是7，如果有，分子是3
+      如果拥有噬魂戒指，分子数值再 + 8
+      
+      分母是：max(0x10, this_number*8 + 0x20 - floor(LCK/0x10))
+      
   13,1: 怪物攻击力.
   14,1: 怪物防御力.
-  15,1: ???
-  16,1: ???
+  15,1: 道具1掉落概率指数.
+    分子是4，如果装备稀有戒指，分子是8
+    分母是：max(0x10, (this_number*4 + 0x10 - floor(LCK/0x10)))
+  16,1: 道具2掉落概率指数.
+    和道具1一样
   17,1: 魂类型.
     0 - 红魂.
     1 - 蓝魂.
@@ -24,4 +36,7 @@
   1C,2: 怪物的抗性.
   1E,2: ???
   20,2: ???
+    The exact effect this has seems to depend on the individual enemy's code.
+    It's somehow related to the enemy entity's bitfield of sprite drawing (entity+58).
+    For example, Bat will unset its "do not draw" bit of that bitfield every frame, but only if this value is 0.
   22,2: ???
