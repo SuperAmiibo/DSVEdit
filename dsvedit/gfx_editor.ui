@@ -22,7 +22,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>GFX file path(s)</string>
+        <string>GFX 文件目录</string>
        </property>
       </widget>
      </item>
@@ -32,7 +32,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Palette pointer</string>
+        <string>色盘指针</string>
        </property>
       </widget>
      </item>
@@ -42,7 +42,7 @@
      <item row="3" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Palette index</string>
+        <string>色盘索引</string>
        </property>
       </widget>
      </item>
@@ -52,7 +52,7 @@
      <item row="1" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>GFX index</string>
+        <string>GFX 索引</string>
        </property>
       </widget>
      </item>

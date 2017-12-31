@@ -21,7 +21,7 @@
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Edit Shop Pools</string>
+       <string>编辑商店道具组</string>
       </attribute>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
@@ -31,7 +31,7 @@
            <item>
             <widget class="QLabel" name="label_3">
              <property name="text">
-              <string>Pool</string>
+              <string>道具组</string>
              </property>
             </widget>
            </item>
@@ -66,7 +66,7 @@
            <item>
             <widget class="QLabel" name="label_2">
              <property name="text">
-              <string>Items in pool</string>
+              <string>道具列表</string>
              </property>
             </widget>
            </item>
@@ -80,7 +80,7 @@
            <item>
             <widget class="QLabel" name="label_4">
              <property name="text">
-              <string>Available items</string>
+              <string>可用道具</string>
              </property>
             </widget>
            </item>

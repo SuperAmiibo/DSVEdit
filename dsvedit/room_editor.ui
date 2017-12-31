@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>地图属性编辑</string>
+   <string>编辑房间属性</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -250,7 +250,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>在地图的位置</string>
+        <string>该房间在地图的位置</string>
        </property>
       </widget>
      </item>

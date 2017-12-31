@@ -154,8 +154,10 @@ class ShopEditor < Qt::Dialog
       @ui.label.text = "Required event flag"
     elsif GAME == "por" && @pool.is_a?(ShopPointItemPool)
       @ui.label.text = "Required shop points (1000P)"
-    elsif GAME == "por" || @pool.is_a?(OoEHardcodedShopItemPool) || GAME == "aos"
+    elsif GAME == "por" || @pool.is_a?(OoEHardcodedShopItemPool) || (GAME == "aos" && REGION == :usa)
       @ui.label.text = "Required boss death flag"
+    elsif GAME == "por" || @pool.is_a?(OoEHardcodedShopItemPool) || (GAME == "aos" && REGION == :cn)
+      @ui.label.text = "需要boss死亡标记"
     else
       @ui.label.text = "Requirement"
     end
