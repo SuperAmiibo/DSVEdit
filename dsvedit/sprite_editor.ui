@@ -92,7 +92,7 @@
          <item>
           <widget class="QLabel" name="label_12">
            <property name="text">
-            <string>雪碧图文件指针</string>
+            <string>精灵活动块指针</string>
            </property>
           </widget>
          </item>
@@ -109,7 +109,7 @@
          <item>
           <widget class="QLabel" name="label_13">
            <property name="text">
-            <string>GFX 指针</string>
+            <string>显存贴图指针</string>
            </property>
           </widget>
          </item>
