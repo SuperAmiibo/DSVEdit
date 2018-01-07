@@ -52,6 +52,8 @@ class SkeletonEditorDialog < Qt::Dialog
     connect(@ui.spriter_export, SIGNAL("clicked()"), self, SLOT("export_to_spriter()"))
     connect(@ui.buttonBox, SIGNAL("clicked(QAbstractButton*)"), self, SLOT("button_box_clicked(QAbstractButton*)"))
     
+    @ui.spriter_export.hide()
+    
     self.show()
     
     self.load_skeleton()
@@ -269,12 +271,21 @@ class SkeletonEditorDialog < Qt::Dialog
     if @current_animation && !@animation_paused
       if @current_animation_tweenframe_index >= @current_keyframe.length_in_frames
         advance_keyframe()
+        
+        millisecond_delay = (1 / 60.0 * 1000).round
+        @animation_timer.start(millisecond_delay)
       else
-        animation_tweenframe_changed(@current_animation_tweenframe_index+1)
+        # Advance by 3 frames at a time, to display the animation at 20fps.
+        # This is because displaying at 60fps causes it to lag and play much slower than it's supposed to.
+        # If there are less than 3 frames left in this keyframe, only advance by however many frames are left.
+        max_tweenframes_to_advance = @current_keyframe.length_in_frames - @current_animation_tweenframe_index
+        num_tweenframes_to_advance = [3, max_tweenframes_to_advance].min
+        
+        animation_tweenframe_changed(@current_animation_tweenframe_index+num_tweenframes_to_advance)
+        
+        millisecond_delay = (num_tweenframes_to_advance / 60.0 * 1000).round
+        @animation_timer.start(millisecond_delay)
       end
-      
-      millisecond_delay = (1 / 60.0 * 1000).round
-      @animation_timer.start(millisecond_delay)
     end
   end
   

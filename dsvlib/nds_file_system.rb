@@ -548,12 +548,16 @@ class NDSFileSystem
     write_new_table_sizes_to_header()
     
     load_overlay(NEW_OVERLAY_ID)
-    
-    mark_space_unused(file_path, 0, NEW_OVERLAY_FREE_SPACE_MAX_SIZE)
   end
   
   def has_free_space_overlay?
     !!(NEW_OVERLAY_ID && @overlays[NEW_OVERLAY_ID])
+  end
+  
+  def fix_free_space_overlay_start_address
+    overlay = overlays[NEW_OVERLAY_ID]
+    overlay[:ram_start_offset] = NEW_OVERLAY_FREE_SPACE_START
+    write_by_file("/ftc/arm9_overlay_table.bin", NEW_OVERLAY_ID*32 + 4, [NEW_OVERLAY_FREE_SPACE_START].pack("V"))
   end
   
   def write_new_table_sizes_to_header
