@@ -32,6 +32,8 @@ require_relative 'player_state_anims_editor_dialog'
 
 require_relative 'ui_main'
 
+NO_FREE_SPACE_MESSAGE = "Refer to the \"Adding a free space overlay\" section of the README for an explanation of how to create free space that can be used by DSVEdit."
+
 class DSVEdit < Qt::MainWindow
   attr_reader :game
   
@@ -564,7 +566,7 @@ class DSVEdit < Qt::MainWindow
   end
   
   def update_room_position_indicator
-    @position_indicator.setPos(@room.room_xpos_on_map*4 + 2.25, @room.room_ypos_on_map*4 + 2.25)
+    @position_indicator.setPos(@room.room_xpos_on_map*4 + 2.25 + @map_offset_x, @room.room_ypos_on_map*4 + 2.25 + @map_offset_y)
     if @room.layers.length > 0
       @position_indicator.setRect(-2, -2, 4*@room.main_layer_width, 4*@room.main_layer_height)
     else
@@ -620,6 +622,8 @@ class DSVEdit < Qt::MainWindow
   end
   
   def change_room_by_map_x_and_y(x, y, button)
+    x -= @map_offset_x
+    y -= @map_offset_y
     x = x / 4
     y = y / 4
     
@@ -715,8 +719,6 @@ class DSVEdit < Qt::MainWindow
   def load_layers
     @renderer.ensure_tilesets_exist("cache/#{GAME}/rooms/", @room)
     @room.layers.each do |layer|
-      next if layer.layer_metadata_ram_pointer == 0 # TODO
-      
       load_layer(layer)
     end
   rescue StandardError => e
@@ -780,7 +782,7 @@ class DSVEdit < Qt::MainWindow
   rescue FreeSpaceManager::FreeSpaceFindError => e
     Qt::MessageBox.warning(self,
       "Failed to find free space",
-      "Failed to find free space to put new layer.\n\nGo to Tools -> Add Overlay to create an empty overlay that DSVEdit can use as free space."
+      "Failed to find free space to put the new layer.\n\n#{NO_FREE_SPACE_MESSAGE}"
     )
   end
   
@@ -803,7 +805,7 @@ class DSVEdit < Qt::MainWindow
     load_room()
     Qt::MessageBox.warning(self,
       "Failed to find free space",
-      "Failed to find free space to put the new entity.\n\nGo to Tools -> Add Overlay to create an empty overlay that DSVEdit can use as free space."
+      "Failed to find free space to put the new entity.\n\n#{NO_FREE_SPACE_MESSAGE}"
     )
   rescue Room::WriteError => e
     @room.read_from_rom() # Reload room to get rid of the failed changes.
@@ -829,7 +831,7 @@ class DSVEdit < Qt::MainWindow
     load_room()
     Qt::MessageBox.warning(self,
       "Failed to find free space",
-      "Failed to find free space to put the new door.\n\nGo to Tools -> Add Overlay to create an empty overlay that DSVEdit can use as free space."
+      "Failed to find free space to put the new door.\n\n#{NO_FREE_SPACE_MESSAGE}"
     )
   rescue Room::WriteError => e
     @room.read_from_rom() # Reload room to get rid of the failed changes.
@@ -847,6 +849,16 @@ class DSVEdit < Qt::MainWindow
   def load_map()
     @map_graphics_scene.clear()
     
+    if GAME == "ooe"
+      # Display the map background.
+      other_sprite = OTHER_SPRITES.find{|spr| spr[:desc] == "Map"}
+      sprite_info = SpriteInfo.new(other_sprite[:gfx_files], other_sprite[:palette], 0, other_sprite[:sprite], nil, game.fs)
+      frames, min_x, min_y = @renderer.render_sprite(sprite_info, frame_to_render: 0, one_dimensional_mode: other_sprite[:one_dimensional_mode])
+      map_background_frame = frames[0].trim!
+      background_item = GraphicsChunkyItem.new(map_background_frame)
+      @map_graphics_scene.addItem(background_item)
+    end
+    
     @map = game.get_map(@area_index, @sector_index)
     
     if GAME == "dos" || GAME == "aos"
@@ -855,6 +867,12 @@ class DSVEdit < Qt::MainWindow
       chunky_png_img = @renderer.render_map(@map)
     end
     map_pixmap_item = GraphicsChunkyItem.new(chunky_png_img)
+    if GAME == "por" || GAME == "ooe"
+      @map_offset_x, @map_offset_y = @map.draw_x_offset*8, @map.draw_y_offset*8
+    else
+      @map_offset_x, @map_offset_y = 0, 0
+    end
+    map_pixmap_item.setOffset(@map_offset_x, @map_offset_y)
     @map_graphics_scene.addItem(map_pixmap_item)
     
     @position_indicator = @map_graphics_scene.addRect(-2, -2, 4, 4, Qt::Pen.new(Qt::NoPen), Qt::Brush.new(Qt::Color.new(255, 255, 128, 128)))

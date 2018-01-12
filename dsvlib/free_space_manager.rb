@@ -191,7 +191,6 @@ module FreeSpaceManager
       end_offset = free_space[:offset] + free_space[:length]
       
       offset = (offset + 3) / 4 * 4 # Round up to the nearest word.
-      end_offset = end_offset / 4 * 4 # Round down to the nearest word.
       
       free_space[:offset] = offset
       free_space[:length] = end_offset - free_space[:offset]
