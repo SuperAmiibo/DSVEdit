@@ -24,9 +24,9 @@ class EntityEditorDialog < Qt::Dialog
     end
     (0..max_type).each do |i|
       description = ENTITY_TYPE_DESCRIPTIONS[i] || "Unused"
-	  if description != "Unused"
+      if description != "Unused"
         @ui.type.addItem("%02X %s" % [i, description])
-	  end
+      end
     end
     
     @room = room

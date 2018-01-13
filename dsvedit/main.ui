@@ -227,12 +227,13 @@
     <addaction name="separator"/>
     <addaction name="actionEntity_Search"/>
     <addaction name="actionSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionAdd_Overlay"/>
     <addaction name="actionPlayer_Editor"/>
     <addaction name="actionPlayer_State_Anims_Editor"/>
     <addaction name="actionItem_Pool_Editor"/>
-    <addaction name="actionWeapon_Synth_Editor"/>
     <addaction name="actionMagic_Seal_Editor"/>
-    <addaction name="actionAdd_Overlay"/>
+    <addaction name="actionWeapon_Synth_Editor"/>
    </widget>
    <widget class="QMenu" name="menuBuild">
     <property name="title">
@@ -462,7 +463,7 @@
     <string>Item Pool Editor</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionGFX_Editor">
@@ -491,7 +492,7 @@
     <string>L</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionEdit_Entities">
@@ -517,7 +518,7 @@
     <string>Add Overlay</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionWeapon_Synth_Editor">
@@ -525,7 +526,7 @@
     <string>Weapon Synth Editor</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionEdit_Room_Props">
@@ -556,7 +557,7 @@
     <string>Magic Seal Editor</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionPlayer_State_Anims_Editor">
@@ -564,7 +565,7 @@
     <string>Player State Anims Editor</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
  </widget>

@@ -98,8 +98,8 @@ class DSVEdit < Qt::MainWindow
     @ui.room_graphics_view.setFocus()
     connect(@room_graphics_scene, SIGNAL("clicked(int, int, const Qt::MouseButton&)"), self, SLOT("room_clicked(int, int, const Qt::MouseButton&)"))
     
-	width = @ui.map_graphics_view.width
-	height = @ui.map_graphics_view.height
+    width = @ui.map_graphics_view.width
+    height = @ui.map_graphics_view.height
     @map_graphics_scene = ClickableGraphicsScene.new
     @map_graphics_scene.setSceneRect(-2, -4, 64*4+1, 48*4+1)
     @ui.map_graphics_view.scale(2, 2)
@@ -268,6 +268,19 @@ class DSVEdit < Qt::MainWindow
     @ui.copy_room_pointer.setEnabled(true);
     @ui.edit_map.setEnabled(true);
     
+    if GAME == "aos"
+      @ui.actionItem_Pool_Editor.setVisible(false);
+      @ui.actionPlayer_Editor.setVisible(false);
+      @ui.actionAdd_Overlay.setVisible(false);
+      @ui.actionWeapon_Synth_Editor.setVisible(false);
+      @ui.actionMagic_Seal_Editor.setVisible(false);
+      @ui.actionPlayer_State_Anims_Editor.setVisible(false);
+      if REGION == :cn
+        @ui.actionText_Editor.setVisible(false);
+      else
+        @ui.actionText_Editor.setVisible(true);
+      end
+    end
   end
   
   def close_open_dialogs
