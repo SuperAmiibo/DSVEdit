@@ -310,7 +310,7 @@ class Game
     @player_format_docs ||= begin
     if REGION == :cn
       file_contents = File.read("./docs/formats/cn_#{GAME} Player Format.txt").force_encoding("UTF-8")
-      else 
+    else 
       file_contents = File.read("./docs/formats/#{GAME} Player Format.txt")
     end
       file_contents
@@ -596,23 +596,28 @@ class Game
     return fs.write(pointer, [song_index].pack("v"))
   end
   
-  def fix_top_screen_on_new_game
-    return unless GAME == "ooe" && REGION == :usa
-    
-    fs.load_overlay(20) # Specifically for OoE
-    fs.write(NEW_GAME_STARTING_TOP_SCREEN_TYPE_OFFSET, [0x05].pack("C"))
-    fs.load_overlay(AREAS_OVERLAY) # Load back OoE's main overlay for area and sector data
+  def armips_patch_filename_prefix
+    prefix = GAME.dup
+    if REGION != :usa
+      prefix = "#{REGION.to_s}_#{prefix}"
+    end
+    return prefix
   end
   
-  def apply_armips_patch(patch_name)
-    game_name = patch_name[0,3]
-    return unless GAME == game_name.downcase
-    
-    if REGION != :usa
-      patch_name = "#{REGION.to_s}_#{patch_name}"
+  def apply_armips_patch(patch_name, full_path: false)
+    if full_path
+      patch_file = patch_name
+    else
+      game_name = patch_name[0,3]
+      return unless GAME == game_name.downcase
+      
+      if REGION != :usa
+        patch_name = "#{REGION.to_s}_#{patch_name}"
+      end
+      
+      patch_file = "asm/#{patch_name}.asm"
     end
     
-    patch_file = "asm/#{patch_name}.asm"
     if !File.file?(patch_file)
       raise "Could not find patch file: #{patch_file}"
     end

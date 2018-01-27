@@ -782,8 +782,6 @@ NEW_GAME_STARTING_ROOM_INDEX_OFFSET = 0x020AC15C
 NEW_GAME_STARTING_X_POS_OFFSET = 0x020D7FB4
 NEW_GAME_STARTING_Y_POS_OFFSET = 0x020D7FB8
 
-NEW_GAME_STARTING_TOP_SCREEN_TYPE_OFFSET = 0x02214F68
-
 TRANSITION_ROOM_LIST_POINTER = nil
 FAKE_TRANSITION_ROOMS = [0x022AE3A8, 0x022A7E78]
 
@@ -1279,7 +1277,7 @@ SHOP_HARDCODED_ITEM_POOLS = [
 ]
 
 FAKE_FREE_SPACES = [
-  {path: "/ftc/overlay9_46", offset: 0x022E4ABC-0x022C1FE0, length: 0xC0}
+  {path: "/ftc/overlay9_46", offset: 0x022E4ABC-0x022C1FE0, length: 0xC0}, # Used by object 5A
 ]
 
 MAGIC_SEAL_COUNT = 0
@@ -1303,15 +1301,15 @@ PLAYER_ANIM_STATE_NAMES = [
   "Jumping diagonally",
   "Double jumping",
   "Superjumping",
-  "",
+  "Smashing head",
   "",
   "",
   "Flying",
   "Falling",
-  "",
-  "",
-  "Hard landing",
-  "",
+  "Landing from small height",
+  "Landing from medium height",
+  "Hard landing straight down",
+  "Hard landing diagonally",
   "Swimming",
   "Submerged underwater without Serpent Scale",
   "Turning around while swimming",
@@ -1329,13 +1327,13 @@ PLAYER_ANIM_STATE_NAMES = [
   "Crouching and using throwing glyph with X-button hand",
   "In air and using throwing glyph with X-button hand",
   "Arms outstretched in front using magic",
-  "",
-  "",
+  "Charging Acerbatus (boss Albus only)",
+  "Firing Acerbatus (boss Albus only)",
   "",
   "Backdashing",
   "Sliding on flat ground",
   "Sliding on slope",
-  "",
+  "Slidejumping",
   "Jumpkicking straight down",
   "Jumpkicking diagonally down",
   "Taking damage while standing/walking",
@@ -1345,23 +1343,23 @@ PLAYER_ANIM_STATE_NAMES = [
   "Taking damage in air from behind",
   "Petrified 1",
   "Petrified 2",
-  "",
+  "Grabbed",
   "",
   "Dying in air",
   "Dying on ground",
+  "Waking up 1",
+  "Lowering head",
+  "Raising head",
+  "Entering fighting pose 1",
+  "Entering fighting pose 2",
   "",
   "",
+  "Waking up 2",
   "",
   "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
+  "Starting to flame kick",
+  "Flame kicking",
+  "Landing from flame kicking (boss Albus only)",
   "",
   "",
   "",

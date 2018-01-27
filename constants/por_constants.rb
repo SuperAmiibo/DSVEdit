@@ -1249,7 +1249,19 @@ SHOP_ITEM_POOL_LIST = 0x020E0028
 SHOP_ITEM_POOL_COUNT = 5
 SHOP_POINT_ITEM_POOL = 0x020E009C
 
-FAKE_FREE_SPACES = []
+FAKE_FREE_SPACES = [
+  {path: "/ftc/overlay9_86", offset: 0x022FC580-0x022E8820, length: 4}, # Used by object 78
+  {path: "/ftc/overlay9_91", offset: 0x023076A0-0x022E8820, length: 4}, # Used by object 54
+  {path: "/ftc/overlay9_92", offset: 0x023066A0-0x022E8820, length: 4}, # Used by object 55
+  {path: "/ftc/overlay9_99", offset: 0x022FB1E0-0x022E8820, length: 0x98}, # Used by object 63
+  {path: "/ftc/overlay9_100", offset: 0x02302D60-0x022E8820, length: 4}, # Used by object 64
+  {path: "/ftc/overlay9_102", offset: 0x02308EA0-0x022E8820, length: 4}, # Used by object 56
+  {path: "/ftc/overlay9_103", offset: 0x02304DC0-0x022E8820, length: 4}, # Used by object 57
+  {path: "/ftc/overlay9_109", offset: 0x022F6400-0x022E8820, length: 0x14}, # Used by objects 50 and 94
+  {path: "/ftc/overlay9_110", offset: 0x022F2680-0x022E8820, length: 8}, # Used by object 51
+  {path: "/ftc/overlay9_111", offset: 0x022F8700-0x022E8820, length: 4}, # Used by object 52
+  {path: "/ftc/overlay9_112", offset: 0x022F2B60-0x022E8820, length: 0x14}, # Used by objects 53 and 66
+]
 
 MAGIC_SEAL_COUNT = 0
 MAGIC_SEAL_LIST_START = nil
@@ -1272,42 +1284,42 @@ PLAYER_ANIM_STATE_NAMES = [
   "Jumping diagonally",
   "Double jumping",
   "Superjumping",
-  "",
-  "",
+  "Smashing head",
+  "Backflipping",
   "Falling",
-  "",
-  "Landing",
+  "Landing from small height",
+  "Landing from medium height",
   "Hard landing straight down",
   "Hard landing diagonally",
   "Pushing",
   "Using skill on ground",
+  "Using skill in air",
+  "Charging spell",
   "",
   "",
-  "",
-  "",
-  "",
+  "Starting to use dual crush",
   "Using dual crush",
   "",
   "",
+  "Spinning art/Richter's dash",
+  "Martial art kick/Old Axe Armor's smash/Part 1 of combo move",
+  "Part 2 of combo move",
+  "Old Axe Armor's running attack/Part 3 of combo move",
+  "Part 4 of combo move",
   "",
   "",
   "",
+  "Swinging wrecking ball",
   "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
-  "",
+  "Using aura blast/starting to use rocket slash",
+  "Using rampage",
+  "Using rocket slash",
   "",
   "",
   "",
   "Sliding on flat ground",
   "Sliding on slope",
-  "",
+  "Slidejumping",
   "Jumpkicking straight down",
   "Jumpkicking diagonally down",
   "Taking damage while standing/walking",
@@ -1318,14 +1330,14 @@ PLAYER_ANIM_STATE_NAMES = [
   "Petrified 1",
   "Petrified 2",
   "",
-  "",
-  "",
-  "",
-  "?? attacking on ground",
-  "",
-  "",
-  "",
-  "",
+  "Being vacuumed by Persephone",
+  "Dying",
+  "Whipping diagonally",
+  "Attacking (unused for Jonathan/Charlotte)",
+  "Attacking while crouching (unused for Jonathan/Charlotte)",
+  "Attacking in air (unused for Jonathan/Charlotte)",
+  "Stop attacking (unused for Jonathan/Charlotte)",
+  "Stop attacking while crouching (unused for Jonathan/Charlotte)",
   "",
   "",
   "",

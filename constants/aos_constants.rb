@@ -585,7 +585,7 @@ BEST_SPRITE_OFFSET_FOR_SPECIAL_OBJECT = {
 
 OTHER_SPRITES = [
   COMMON_SPRITE,
-
+  
   # soma sprite 080E11C4
   # soma gfx 081717CC or maybe 081674B8 or maybe 081664B4
   # soma's gfx list is around 080E11E0?

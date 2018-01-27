@@ -224,6 +224,7 @@
     <addaction name="actionMusic_Editor"/>
     <addaction name="actionTileset_Editor"/>
     <addaction name="actionText_Editor"/>
+    <addaction name="actionApply_ARMIPS_Patch"/>
     <addaction name="separator"/>
     <addaction name="actionEntity_Search"/>
     <addaction name="actionSettings"/>
@@ -566,6 +567,11 @@
    </property>
    <property name="visible">
     <bool>true</bool>
+   </property>
+  </action>
+  <action name="actionApply_ARMIPS_Patch">
+   <property name="text">
+    <string>Apply ARMIPS Patch</string>
    </property>
   </action>
  </widget>

@@ -28,11 +28,22 @@
   ; r1 - Maximum entity index to check
   ; r2 - Update function pointer for the new entity
 
+02015078 UpdateGame
+
 02012920 UpdateAndDrawAllEntitiesAndTiles
 02012B60 UpdateAllEntities
 02012960 DrawAllEntitiesAndTiles
 02002F00 DrawTiles
 02012784 ProcessInput
+
+02034D3C UpdatePauseMenuState?
+  ; Returns: Game substate to switch to, or -1 to stay in this substate.
+
+02033464 EnterOverlappingDoor
+  ; r0 - Player entity
+  ; Check if the player is on top of a door, and try to enter that door.
+  ; This function has a bug where if the player is 1 pixel inside a right or down door it won't count it as overlapping the door, which allows the suspend glitch to exist.
+  ; The bugged lines of code are at 02033524 and 0203353C, they check if the player's X/Y is greater than the room's width/height, when they should check greater than or equal.
 
 0201BB6C AssetGetPointer
   ; r0 - Asset index
@@ -199,16 +210,6 @@
   ; Will return true if either player 1 or player 2 have this item equipped, but only if your partner is called out. If your partner is hidden away, only the controlled character's equipment matters.
   ; This is used for Eye for Decay.
 
-021FED58 PlayerSetStateAnim
-  ; r0 - Entity
-  ; r1 - Animation state index. This is the index in their state->anims mapping list.
-  ; r2 - ? Stored to entity+FC
-  ; This sets the player's animation state.
-021FEE34 PlayerGetStateAnim
-  ; r0 - Pointer to player entity
-  ; r1 - State index
-  ; r2 - 2?
-
 02214330 SubweaponInitialize
 
 021FC77C PlayerFullRecover
@@ -220,7 +221,7 @@
   ; r0 - Index of the consumable
   ; Calls func 021E3AA8 with r1=0 and r2=1.
 
-0205582C MapDrawBackground
+0205582C MapUpdateAndDrawBackground
 02030570 MapGetExploredTileListForArea
   ; r0 - Area index
   ; Returns r0 - Pointer to the start of this area's list of explored tiles.
@@ -242,6 +243,15 @@
 02030710 MapGetNumTiles
   ; r0 - Area index
 
+0202E5F8 UpdatePlayerPositionOnMap
+  ; Updates the four variables holding both players' positions on the map (0211177C, 0211177E, 02111780, 02111782).
+  ; Then it reads the controlled player's position on the map and calls MapSetTileExplored.
+02030104 MapGetTileIndexByTileXAndY
+  ; r0 - Area index
+  ; r1 - X pos on the map in tiles
+  ; r2 - Y pos on the map in tiles
+  ; Returns the index of the tile in this map's list of tiles, or FFFF if there's no tile at this position.
+
 020347D0 DummyUpdate
 
 022028E0 PlayerUpdate
@@ -260,6 +270,7 @@
   ; 021DBFFC and 021DBFF8 hardcode Jonathan's hand's X and Y offsets relative to his position.
   ; 021DBFF0 and 021DBFEC hardcode Richter's hand's X and Y offsets relative to his position.
   ; 021DBFAC and 021DBFC0 hardcode any other character's hand's X and Y offsets relative to his position.
+  ; 021DC00C hardcodes the Y offset to add when the player is crouching.
 
 02012E44 DeleteEntity
   ; r0 - Entity pointer
@@ -431,6 +442,17 @@
   ; r2 - Anim properties bitfield
   ; Stores the properties bitfield to entity+80, then calls SetSpriteAnimSafe.
 
+021FED58 PlayerSetStateAnim
+  ; r0 - Entity
+  ; r1 - Animation state index. This is the index in their state->anims mapping list.
+  ; r2 - ? Stored to entity+FC
+  ; This sets the player's animation state.
+021FEE34 PlayerSetStateAnimAndProperties
+  ; r0 - Pointer to player entity
+  ; r1 - State index
+  ; r2 - Anim properties bitfield
+  ; Sets the player's animation state and the animation properties at entity+80.
+
 021DB0A4 GenericDraw
   ; The draw function for enemies, enemy projectiles, player skills, skill pickups, special objects, dust, explosions, etc.
   ; Not used for players, item pickups, destructibles, or particles from destroyed destructibles/enemies.
@@ -450,6 +472,16 @@
   ;   0 - A jump-through platform you can slide on.
   ;   1 - A jump-through platform you can fall through.
   ;   3 - A completely solid block.
+
+02004A8C SetFakeBlockCollision
+  ; r0 - X pos of the block in pixels
+  ; r1 - Y pos of the block in pixels
+020049B0 SetFakeBlockCollisionMulti
+  ; r0 - X pos in pixels
+  ; r1 - Y pos in pixels
+  ; r2 - Width in blocks
+  ; r3 - Height in blocks
+  ; Used by the temporary walls added during the Legion fight.
 
 020BD268 FloatConvertFromInt
   ; r0 - Integer
@@ -531,7 +563,7 @@
   ; r0 - The base item drop chance from the enemy DNA.
   ; Returns: The drop chance, out of decimal 10000. For example, 528 means a 5.28% drop chance. Note that drop chances cap at 50% (5000).
 
-02055210 DrawTextToTopScreen?
+02055210 RenderTextToTopScreen?
   ; r0 - 
   ; r1 - 
   ; r2 - 
@@ -540,7 +572,7 @@
   ; [r13,4] - Y pos (in terms of 8x8 tiles)
   ; [r13,8] - Text index to draw
   ; [r13,C] - 
-0200A2A0 DrawNumberText?
+0200A2A0 RenderNumberText?
   ; r0 - 
   ; r1 - 
   ; r2 - 
@@ -550,6 +582,28 @@
   ; [r13,8] - Integer to draw
   ; [r13,C] - 
   ; [r13,10] - 
+0200870C RenderTextToTiles2
+  ; r0 - X pos (in terms of 8x8 tiles)
+  ; r1 - Y pos (in terms of 8x8 tiles)
+  ; r2 - 
+  ; r3 - 
+  ; [r13] - 
+  ; [r13,4] - 
+  ; [r13,8] - 
+  ; [r13,C] - Text index of the text to render (e.g. 516 is a single colon)
+  ; [r13,10] - 
+  ; [r13,14] - 
+
+0203D3AC InitializeMenuBG1
+  ; r0 - Menu entity (02110F00)
+0205B5C0 DrawMenuBG1
+  ; r0 - Menu entity (02110F00)
+  ; r1 - GFX list
+  ; r2 - Palette list
+  ; r3 - Layer metadata
+
+020557C8 SetTopScreen
+  ; r0 - Top screen type to change to
 
 02014EA0 DamagePlayer?
 02014EC4 TakeDamage?
@@ -571,6 +625,9 @@
   ; r0 - Parent entity
   ; r1 - Child entity
   ; Initializes the child with the sprite and palette of the parent.
+
+020F6270 GameObject
+020CA580 PointerToGameObject
 
 ; Enemy-specific code
 0222D5DC EnemyZombieCreate
@@ -1177,6 +1234,7 @@
 022EAD74 Object8DUpdate
 022E8820 Object8ECreate
 022E8960 Object8EUpdate
+022E8C00 Object8EDraw
 022E8820 Object8FCreate
 022E88E4 Object8FUpdate
 02073898 Object90Create

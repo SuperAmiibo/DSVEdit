@@ -2,7 +2,7 @@
 require 'oily_png'
 
 class Renderer
-  COLLISION_SOLID_COLOR = ChunkyPNG::Color::BLACK
+  COLLISION_SOLID_COLOR = ChunkyPNG::Color.rgba(255, 128, 0, 255)
   COLLISION_SEMISOLID_COLOR = ChunkyPNG::Color.rgba(127, 127, 127, 255)
   COLLISION_DAMAGE_COLOR = ChunkyPNG::Color.rgba(208, 32, 32, 255)
   COLLISION_WATER_COLOR = ChunkyPNG::Color.rgba(32, 32, 208, 255)
@@ -527,7 +527,18 @@ class Renderer
     colors = []
     (0..image.height-1).step(16) do |y|
       (0..image.width-1).step(16) do |x|
-        colors << image[x,y]
+        color = image[x,y]
+        
+        # Verify that all pixels within each swatch are the same color in case the user scaled the swatches down and back up or something.
+        (0..15).each do |y_within_block|
+          (0..15).each do |x_within_block|
+            if color != image[x+x_within_block,y+y_within_block]
+              raise GFXImportError.new("The palette file #{file_path} is not a proper palette swatch exported by DSVEdit.\n\nIf you want to generate a palette from an arbitrary file use \"Generate palette from file(s)\" instead.")
+            end
+          end
+        end
+        
+        colors << color
       end
     end
     if colors.size > colors_per_palette

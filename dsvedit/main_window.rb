@@ -29,6 +29,7 @@ require_relative 'tileset_chooser_dialog'
 require_relative 'door_editor_dialog'
 require_relative 'magic_seal_editor_dialog'
 require_relative 'player_state_anims_editor_dialog'
+require_relative 'armips_patcher_dialog'
 
 require_relative 'ui_main'
 
@@ -65,6 +66,7 @@ class DSVEdit < Qt::MainWindow
   slots "open_weapon_synth_editor()"
   slots "open_shop_editor()"
   slots "open_magic_seal_editor()"
+  slots "open_armips_patcher()"
   slots "add_new_overlay()"
   slots "open_settings()"
   slots "write_to_rom()"
@@ -143,6 +145,7 @@ class DSVEdit < Qt::MainWindow
     connect(@ui.actionWeapon_Synth_Editor, SIGNAL("activated()"), self, SLOT("open_weapon_synth_editor()"))
     connect(@ui.actionShop_Editor, SIGNAL("activated()"), self, SLOT("open_shop_editor()"))
     connect(@ui.actionMagic_Seal_Editor, SIGNAL("activated()"), self, SLOT("open_magic_seal_editor()"))
+    connect(@ui.actionApply_ARMIPS_Patch, SIGNAL("activated()"), self, SLOT("open_armips_patcher()"))
     connect(@ui.actionAdd_Overlay, SIGNAL("activated()"), self, SLOT("add_new_overlay()"))
     connect(@ui.actionEntity_Search, SIGNAL("activated()"), self, SLOT("open_entity_search()"))
     connect(@ui.actionSettings, SIGNAL("activated()"), self, SLOT("open_settings()"))
@@ -211,6 +214,7 @@ class DSVEdit < Qt::MainWindow
     @ui.actionWeapon_Synth_Editor.setEnabled(false);
     @ui.actionShop_Editor.setEnabled(false);
     @ui.actionMagic_Seal_Editor.setEnabled(false);
+    @ui.actionApply_ARMIPS_Patch.setEnabled(false);
     @ui.actionAdd_Overlay.setEnabled(false);
     @ui.actionEntity_Search.setEnabled(false);
     @ui.actionBuild.setEnabled(false);
@@ -256,6 +260,7 @@ class DSVEdit < Qt::MainWindow
     @ui.actionWeapon_Synth_Editor.setEnabled(true);
     @ui.actionShop_Editor.setEnabled(true);
     @ui.actionMagic_Seal_Editor.setEnabled(true);
+    @ui.actionApply_ARMIPS_Patch.setEnabled(true);
     @ui.actionAdd_Overlay.setEnabled(true);
     @ui.actionEntity_Search.setEnabled(true);
     @ui.actionBuild.setEnabled(true);
@@ -339,15 +344,29 @@ class DSVEdit < Qt::MainWindow
     @progress_dialog.setCancelButton(nil) # Don't give an option to cancel extracting
     
     @progress_dialog.execute do
-      game.initialize_from_rom(rom_path, extract_to_hard_drive = true) do |percentage_written|
-        next unless percentage_written % 10 == 0 # Only update the UI every 100 files because updating too often is slow.
-        break if @progress_dialog.nil?
-        
-        Qt.execute_in_main_thread do
-          if @progress_dialog && !@progress_dialog.wasCanceled
-            @progress_dialog.setValue(percentage_written)
+      begin
+        game.initialize_from_rom(rom_path, extract_to_hard_drive = true) do |percentage_written|
+          next unless percentage_written % 10 == 0 # Only update the UI every 100 files because updating too often is slow.
+          break if @progress_dialog.nil?
+          
+          Qt.execute_in_main_thread do
+            if @progress_dialog && !@progress_dialog.wasCanceled
+              @progress_dialog.setValue(percentage_written)
+            end
           end
         end
+      rescue StandardError => e
+        Qt.execute_in_main_thread do
+          if @progress_dialog
+            @progress_dialog.setValue(max_val) unless @progress_dialog.wasCanceled
+            @progress_dialog.close()
+            @progress_dialog = nil
+          end
+          
+          Qt::MessageBox.critical(self, "ROM Extraction failed", "Failed to extract ROM with error:\n#{e.message}\n\n#{e.backtrace.join("\n")}")
+        end
+        update_filesystem_watcher()
+        return
       end
       
       Qt.execute_in_main_thread do
@@ -985,6 +1004,10 @@ class DSVEdit < Qt::MainWindow
     end
   end
   
+  def open_armips_patcher
+    @open_dialogs << ArmipsPatcherDialog.new(self, game)
+  end
+  
   def add_new_overlay
     if SYSTEM == :gba
       msg = "Can't add an overlay to a GBA game."
@@ -1204,15 +1227,28 @@ class DSVEdit < Qt::MainWindow
     max_val = fs.files_without_dirs.length
     @progress_dialog = ProgressDialog.new("打包中", "写入ROM到文件中...", max_val)
     @progress_dialog.execute do
-      fs.write_to_rom(output_rom_path) do |files_written|
-        next unless files_written % 100 == 0 # Only update the UI every 100 files because updating too often is slow.
-        break if @progress_dialog.nil?
-        
-        Qt.execute_in_main_thread do
-          if @progress_dialog && !@progress_dialog.wasCanceled
-            @progress_dialog.setValue(files_written)
+      begin
+        fs.write_to_rom(output_rom_path) do |files_written|
+          next unless files_written % 100 == 0 # Only update the UI every 100 files because updating too often is slow.
+          break if @progress_dialog.nil?
+          
+          Qt.execute_in_main_thread do
+            if @progress_dialog && !@progress_dialog.wasCanceled
+              @progress_dialog.setValue(files_written)
+            end
           end
         end
+      rescue StandardError => e
+        Qt.execute_in_main_thread do
+          if @progress_dialog
+            @progress_dialog.setValue(max_val) unless @progress_dialog.wasCanceled
+            @progress_dialog.close()
+            @progress_dialog = nil
+          end
+          
+          Qt::MessageBox.critical(self, "Building ROM failed", "Failed to build ROM with error:\n#{e.message}\n\n#{e.backtrace.join("\n")}")
+        end
+        return
       end
       
       Qt.execute_in_main_thread do
@@ -1299,6 +1335,7 @@ class ProgressDialog < Qt::ProgressDialog
     self.windowModality = Qt::ApplicationModal
     self.windowFlags = Qt::CustomizeWindowHint | Qt::WindowTitleHint
     self.setFixedSize(self.size);
+    self.autoReset = false
     connect(self, SIGNAL("canceled()"), self, SLOT("cancel_thread()"))
     self.show
   end

@@ -48,6 +48,9 @@ Enemies:
 1F Killer Doll
 20 Zombie Officer
 21 Creaking Skull
+  参数A:
+    0 小怪.
+    1 Boss (杀死一次就不出现了).
 22 Wooden Golem
 23 Tsuchinoko 
 24 Persephone
