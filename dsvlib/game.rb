@@ -74,6 +74,21 @@ class Game
       @areas << area
     end
     
+    generate_list_of_sectors_by_room_pointer()
+    
+    if REGION == :cn
+      @content = File.open("./dat/cn_aos_word.dat", "rb") {|file| file.read}
+      @content = @content.force_encoding("UTF-8")
+      #@content = File.read("./dat/cn_aos_word.dat").force_encoding("UTF-8")
+	  
+    else
+      @content = nil
+      @text_database = TextDatabase.new(fs)
+      @room_loaded_gfx = {}
+    end
+  end
+  
+  def generate_list_of_sectors_by_room_pointer
     @sectors_by_room_metadata_pointer = {}
     areas.each do |area|
       area.sectors.each do |sector|
@@ -82,17 +97,6 @@ class Game
         end
       end
     end
-    if REGION == :cn
-      @content = File.open("./dat/cn_aos_word.dat", "rb") {|file| file.read}
-      @content = @content.force_encoding("UTF-8")
-      #@content = File.read("./dat/cn_aos_word.dat").force_encoding("UTF-8")
-	else
-	  @content = nil
-    end
-	
-    @text_database = TextDatabase.new(fs, @content)
-    
-    @room_loaded_gfx = {}
   end
   
   def each_room

@@ -197,6 +197,9 @@ module FreeSpaceManager
       free_space[:offset] = offset
       free_space[:length] = end_offset - free_space[:offset]
     end
+    @free_spaces.delete_if do |free_space|
+      free_space[:length] <= 0
+    end
   end
   
   def automatically_remove_nonzero_free_spaces(files_to_check)
@@ -210,9 +213,28 @@ module FreeSpaceManager
           break
         end
         
-        word = read_by_file(free_space[:path], offset, 4).unpack("V")
-        if word != 0
-          remove_free_space(free_space[:path], offset, 4)
+        space_left_in_file = files_by_path[free_space[:path]][:size] - offset
+        case space_left_in_file
+        when 1
+          byte = read_by_file(free_space[:path], offset, 1).unpack("C").first
+          if byte != 0
+            remove_free_space(free_space[:path], offset, 1)
+          end
+        when 2
+          halfword = read_by_file(free_space[:path], offset, 2).unpack("v").first
+          if halfword != 0
+            remove_free_space(free_space[:path], offset, 2)
+          end
+        when 3
+          bytes = read_by_file(free_space[:path], offset, 3).unpack("CCC")
+          unless bytes.all?{|byte| byte == 0}
+            remove_free_space(free_space[:path], offset, 2)
+          end
+        else
+          word = read_by_file(free_space[:path], offset, 4).unpack("V").first
+          if word != 0
+            remove_free_space(free_space[:path], offset, 4)
+          end
         end
       end
     end

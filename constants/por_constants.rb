@@ -782,6 +782,7 @@ WOODEN_DOOR_SUBTYPE = 0x82
 AREA_NAME_SUBTYPE = 0x79
 
 SAVE_POINT_SUBTYPE = 0x1D
+WARP_POINT_SUBTYPE = 0x1E
 
 ITEM_LOCAL_ID_RANGES = {
   0x02 => (0x00..0x5F), # consumable
@@ -1261,6 +1262,16 @@ FAKE_FREE_SPACES = [
   {path: "/ftc/overlay9_110", offset: 0x022F2680-0x022E8820, length: 8}, # Used by object 51
   {path: "/ftc/overlay9_111", offset: 0x022F8700-0x022E8820, length: 4}, # Used by object 52
   {path: "/ftc/overlay9_112", offset: 0x022F2B60-0x022E8820, length: 0x14}, # Used by objects 53 and 66
+  
+  {path: "/ftc/overlay9_80", offset: 0x022FEF80-0x022E8820, length: 0x40}, # Used by an unused room's layer list
+  {path: "/ftc/overlay9_80", offset: 0x022FEF40-0x022E8820, length: 0x40}, # Used by an unused room's layer list
+  {path: "/ftc/overlay9_82", offset: 0x022FB040-0x022E8820, length: 0x40}, # Used by an unused room's layer list
+  {path: "/ftc/overlay9_82", offset: 0x022FB000-0x022E8820, length: 0x40}, # Used by an unused room's layer list
+  {path: "/ftc/overlay9_82", offset: 0x022FAFC0-0x022E8820, length: 0x40}, # Used by an unused room's layer list
+  {path: "/ftc/overlay9_82", offset: 0x022FAF80-0x022E8820, length: 0x40}, # Used by an unused room's layer list
+  {path: "/ftc/overlay9_85", offset: 0x023069C0-0x022E8820, length: 0x40}, # Used by an unused room's layer list
+  {path: "/ftc/overlay9_86", offset: 0x022FC5C4-0x022E8820, length: 0x40}, # Used by an unused room's layer list
+  {path: "/ftc/overlay9_86", offset: 0x022FC584-0x022E8820, length: 0x40}, # Used by an unused room's layer list
 ]
 
 MAGIC_SEAL_COUNT = 0

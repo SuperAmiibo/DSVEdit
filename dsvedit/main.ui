@@ -571,7 +571,7 @@
   </action>
   <action name="actionApply_ARMIPS_Patch">
    <property name="text">
-    <string>Apply ARMIPS Patch</string>
+    <string>应用ARMIPS补丁</string>
    </property>
   </action>
  </widget>

@@ -76,7 +76,7 @@ class Layer
   end
   
   def read_from_layer_tiledata
-    if layer_tiledata_ram_start_offset.nil?
+    if layer_tiledata_ram_start_offset.nil? || layer_tiledata_ram_start_offset == 0
       # Empty GBA layer.
       @tiles = []
       (@height*SCREEN_HEIGHT_IN_TILES*@width*SCREEN_WIDTH_IN_TILES).times do
