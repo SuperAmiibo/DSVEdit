@@ -87,6 +87,7 @@ class DSVEdit < Qt::MainWindow
   slots "open_in_tiled()"
   slots "import_from_tiled()"
   slots "set_current_room_as_starting_room()"
+  slots "set_current_room_as_transmit_room()"
   slots "copy_room_pointer_to_clipboard()"
   slots "toggle_hide_map()"
   
@@ -161,6 +162,7 @@ class DSVEdit < Qt::MainWindow
     connect(@ui.tiled_export, SIGNAL("released()"), self, SLOT("open_in_tiled()"))
     connect(@ui.tiled_import, SIGNAL("released()"), self, SLOT("import_from_tiled()"))
     connect(@ui.set_as_starting_room, SIGNAL("released()"), self, SLOT("set_current_room_as_starting_room()"))
+    connect(@ui.set_as_transmit_room, SIGNAL("released()"), self, SLOT("set_current_room_as_transmit_room()"))
     connect(@ui.copy_room_pointer, SIGNAL("released()"), self, SLOT("copy_room_pointer_to_clipboard()"))
     connect(@ui.edit_map, SIGNAL("released()"), self, SLOT("open_map_editor()"))
     connect(@ui.toggle_hide_map, SIGNAL("released()"), self, SLOT("toggle_hide_map()"))
@@ -226,6 +228,7 @@ class DSVEdit < Qt::MainWindow
     @ui.set_as_starting_room.setEnabled(false);
     @ui.copy_room_pointer.setEnabled(false);
     @ui.edit_map.setEnabled(false);
+    @ui.set_as_transmit_room.setVisible(false);
     
     @ui.map_graphics_view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     @ui.map_graphics_view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -280,6 +283,7 @@ class DSVEdit < Qt::MainWindow
       @ui.actionWeapon_Synth_Editor.setVisible(false);
       @ui.actionMagic_Seal_Editor.setVisible(false);
       @ui.actionPlayer_State_Anims_Editor.setVisible(false);
+      @ui.set_as_transmit_room.setVisible(true);
       if REGION == :cn
         @ui.actionText_Editor.setVisible(false);
       else
@@ -1164,6 +1168,10 @@ class DSVEdit < Qt::MainWindow
   
   def set_current_room_as_starting_room
     game.set_starting_room(@area_index, @sector_index, @room_index)
+  end
+  
+  def set_current_room_as_transmit_room
+    game.set_transmit_room(@room.room_metadata_ram_pointer)
   end
   
   def copy_room_pointer_to_clipboard

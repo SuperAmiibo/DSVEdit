@@ -117,6 +117,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="set_as_transmit_room">
+        <property name="text">
+         <string>设置当前房间为时之法师传送房间</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="copy_room_pointer">
         <property name="text">
          <string>点击复制房间指针</string>

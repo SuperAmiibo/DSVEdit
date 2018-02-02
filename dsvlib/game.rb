@@ -709,6 +709,15 @@ class Game
       fs.write(NEW_GAME_STARTING_Y_POS_OFFSET, [y_pos].pack("v"))
     end
   end
+
+  def set_transmit_room(room_pointer)
+    if GAME == "aos"
+      puts GAME_TRANSMIT_ROOM_OFFSET
+      if GAME_TRANSMIT_ROOM_OFFSET
+        fs.write(GAME_TRANSMIT_ROOM_OFFSET, [room_pointer].pack("v*"))
+      end
+    end
+  end
   
   def add_new_overlay
     fs.add_new_overlay_file()
