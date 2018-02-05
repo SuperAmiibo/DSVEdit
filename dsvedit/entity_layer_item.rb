@@ -77,6 +77,61 @@ class EntityLayerItem < Qt::GraphicsRectItem
         BEST_SPRITE_FRAME_FOR_SPECIAL_OBJECT[special_object_id],
         sprite_offset: BEST_SPRITE_OFFSET_FOR_SPECIAL_OBJECT[special_object_id],
         item_icon_image: item_icon_chunky_image)
+    elsif entity.is_portrait? && (0..9).include?(entity.var_a)
+      if entity.subtype == 0x75 # Portrait to the Throne Room
+        other_sprite = OTHER_SPRITES.find{|spr| spr[:desc] == "Portrait painting 2"}
+        frame_to_render = 0
+        palette_offest = 0
+        art_offset_x = 0
+        art_offset_y = 0
+      else
+        other_sprite = case entity.var_a
+        when 1, 3, 5, 7
+          OTHER_SPRITES.find{|spr| spr[:desc] == "Portrait painting 0"}
+        when 2, 4, 6, 8
+          OTHER_SPRITES.find{|spr| spr[:desc] == "Portrait painting 1"}
+        when 0, 9
+          OTHER_SPRITES.find{|spr| spr[:desc] == "Portrait painting 3"}
+        end
+        frame_to_render = [0, 0, 0, 1, 1, 3, 2, 2, 3, 1][entity.var_a]
+        palette_offset = case entity.var_a
+        when 5 # Nation of Fools hardcodes the palette offset instead of having the sprite set a palette index normally.
+          1
+        else
+          0
+        end
+        art_offset_x = 24
+        art_offset_y = 24
+      end
+      
+      reused_info = other_sprite.merge({palette_offset: palette_offset})
+      painting_sprite_info = SpriteInfo.extract_gfx_and_palette_and_sprite_from_create_code(other_sprite[:pointer], @fs, nil, reused_info)
+      sprite_filename = @renderer.ensure_sprite_exists("cache/#{GAME}/sprites/", painting_sprite_info, frame_to_render)
+      portrait_art_image = ChunkyPNG::Image.from_file(sprite_filename)
+      
+      special_object_id = entity.subtype
+      sprite_info = SpecialObjectType.new(special_object_id, @fs).extract_gfx_and_palette_and_sprite_from_create_code
+      add_sprite_item_for_entity(entity, sprite_info,
+        BEST_SPRITE_FRAME_FOR_SPECIAL_OBJECT[special_object_id],
+        sprite_offset: BEST_SPRITE_OFFSET_FOR_SPECIAL_OBJECT[special_object_id],
+        portrait_art: [portrait_art_image, art_offset_x, art_offset_y])
+    elsif GAME == "por" && entity.is_special_object? && [0x77, 0x8A].include?(entity.subtype)
+      studio_portrait_frame_sprite_info = SpecialObjectType.new(0x5F, @fs).extract_gfx_and_palette_and_sprite_from_create_code
+      studio_portrait_art_sprite_info = SpecialObjectType.new(entity.subtype, @fs).extract_gfx_and_palette_and_sprite_from_create_code
+      
+      frame_to_render = 0
+      sprite_filename = @renderer.ensure_sprite_exists("cache/#{GAME}/sprites/", studio_portrait_art_sprite_info, frame_to_render)
+      studio_portrait_art_image = ChunkyPNG::Image.from_file(sprite_filename)
+      art_offset_x = 208
+      art_offset_y = 40
+      
+      frame_num_for_studio_portrait_frame = 0x18
+      special_object_id = entity.subtype
+      sprite_info = SpecialObjectType.new(special_object_id, @fs).extract_gfx_and_palette_and_sprite_from_create_code
+      add_sprite_item_for_entity(entity, studio_portrait_frame_sprite_info,
+        frame_num_for_studio_portrait_frame,
+        sprite_offset: BEST_SPRITE_OFFSET_FOR_SPECIAL_OBJECT[special_object_id],
+        portrait_art: [studio_portrait_art_image, art_offset_x, art_offset_y])
     elsif entity.is_special_object?
       special_object_id = entity.subtype
       sprite_info = SpecialObjectType.new(special_object_id, @fs).extract_gfx_and_palette_and_sprite_from_create_code
@@ -194,7 +249,7 @@ class EntityLayerItem < Qt::GraphicsRectItem
     graphics_item.setParentItem(self)
   end
   
-  def add_sprite_item_for_entity(entity, sprite_info, frame_to_render, sprite_offset: nil, item_icon_image: nil)
+  def add_sprite_item_for_entity(entity, sprite_info, frame_to_render, sprite_offset: nil, item_icon_image: nil, portrait_art: nil)
     if frame_to_render == -1
       # Don't show this entity's sprite in the editor.
       graphics_item = EntityRectItem.new(entity, @main_window)
@@ -213,6 +268,11 @@ class EntityLayerItem < Qt::GraphicsRectItem
     
     if item_icon_image
       chunky_frame.compose!(item_icon_image, 6, 0)
+    end
+    
+    if portrait_art
+      portrait_art_image, x_offset, y_offset = portrait_art
+      chunky_frame.compose!(portrait_art_image, x_offset, y_offset)
     end
     
     graphics_item = EntityChunkyItem.new(chunky_frame, entity, @main_window)
