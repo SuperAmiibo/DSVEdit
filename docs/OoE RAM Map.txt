@@ -66,6 +66,21 @@
 
 020ECAA0,4 - When in a transition room, this is the current sector index that is loaded.
 
+020EF27C-020EF36B - List of voice SFX indexes for each player.
+  Entry length 0x30.
+  00,4: SFX index for attacking (random 1).
+  04,4: SFX index for attacking (random 2).
+  08,4: SFX index for attacking (random 3).
+  0C,4: SFX index for attacking (random 4).
+  10,4: SFX index for using glyph union.
+  14,4: 
+  18,4: 
+  1C,4: 
+  20,4: 
+  24,4: 
+  28,4: 
+  2C,4: 
+
 020ECBB8 - List of which assets to load for each sector.
   This is a list of pointers, one for each area.
   Each of those pointers points to a list of pointers, one for each sector in that area.
@@ -103,6 +118,19 @@
     020EF144-020EF193: Albus
   Each list is 0x50 bytes long. Each state takes up 1 byte for 0x50 states in total.
   Each entry is the sprite animation index for that state index.
+
+020EF1F8-020EF26F - List of starting/base stats for each player.
+  Entry length 0x18.
+  00,2: ATK
+  02,2: DEF
+  04,2: STR
+  06,2: CON
+  08,2: INT
+  0A,2: MND
+  0C,2: LCK
+  0E,2: Unused?
+  10,4: Bitfield of resistances.
+  14,4: ??? 0x8002 0x0002
 
 020EF48C-020EF4C3 - Weapons (unused).
 020EF4C4-020EF50B - Relics.
@@ -158,6 +186,10 @@
   4,4: GFX asset pointer.
   8,4: ??? 0
   C,4: Palette pointer.
+
+020F4158-020F415E - List of which summon index corresponds to each summon's glyph ID+1.
+  Entry length 1.
+  The index in this list is the glyph ID+1 - 0x48.
 
 020F44A0 - List of GFX asset indexes for images of enemies in the bestiary.
   Each entry is 4 bytes long.
@@ -217,16 +249,27 @@ Requirement lists for kill quests:
 020FFD20,4 - Pointer to the player (02109820).
 020FFD2C,4 - Can have a pointer to the player, or 0?
 
-Player's current stats:
-020FFD5C,2 - ATK
-020FFD5E,2 - DEF
-020FFD60,2 - STR
-020FFD62,2 - CON
-020FFD64,2 - INT
-020FFD66,2 - MND
-020FFD68,2 - LCK
-020FFD6A,2 - ?
-020FFD6C,4 - Bitfield of resistances.
+020FFD34 - Player's current base stats.
+  020FFD34,2 - ATK
+  020FFD36,2 - DEF
+  020FFD38,2 - STR
+  020FFD3A,2 - CON
+  020FFD3C,2 - INT
+  020FFD3E,2 - MND
+  020FFD40,2 - LCK
+  020FFD42,2 - Unused?
+  020FFD44,4 - Bitfield of resistances.
+020FFD48 - Player's current stats.
+020FFD5C - Player's current stats, with bonus stats added.
+  020FFD5C,2 - ATK
+  020FFD5E,2 - DEF
+  020FFD60,2 - STR
+  020FFD62,2 - CON
+  020FFD64,2 - INT
+  020FFD66,2 - MND
+  020FFD68,2 - LCK
+  020FFD6A,2 - Unused?
+  020FFD6C,4 - Bitfield of resistances.
 
 020FFDDC,4 - Bitfield of damage types that most recently hit the player.
 
@@ -346,9 +389,17 @@ A 1% attack boost takes 0x147 (0d327) AP.
 A 100% attack boost (double) takes 0x8000 (0d32768) AP.
 A 200% attack boost (triple) takes 0xFFFF (0d65535) AP.
 
-0210032E,2 - Current EXP Fidelis Aranea has.
-  7FFF - EXP needed for level 2.
-  FFFE - EXP needed for level 3.
+0210032C-02100339 - List of current EXP for each of the summon glyphs. Halfwords.
+  0210032C,2 - Fidelis Caries
+  0210032E,2 - Fidelis Aranea
+  02100330,2 - Fidelis Polkir
+  02100332,2 - Fidelis Alate
+  02100334,2 - Fidelis Medusa
+  02100336,2 - Fidelis Noctua
+  02100338,2 - Fidelis Mortus
+  They need 0x7FFF EXP to reach level 2, and 0xFFFE EXP to reach level 3.
+  The summon hitting an enemy gives it only 3 EXP per hit.
+  But absorbing a duplicate of the summon glyph gives it 0x7D0 EXP (decimal 2000).
 
 02100342,1 - Current glyph sleeve (0 1 or 2 for A B or C).
 
@@ -360,6 +411,7 @@ A 200% attack boost (triple) takes 0xFFFF (0d65535) AP.
 
 02100378-0210037F - Miscellaneous flags.
   Bit indexes:
+  00 - Lighthouse ceilings have been destroyed and elevator is functional.
   06 - Cerberus gate down.
   includes flags for which area titles have been seen by the player (e.g. "Monastery")
   also includes flags which breakable walls/secret doors have been uncovered on the map. 27 means the one at the bottom right of dracula's castle.
@@ -430,27 +482,32 @@ A 200% attack boost (triple) takes 0xFFFF (0d65535) AP.
 0210078E - ID of the last enemy you attacked. For the enemy info on the top screen.
   79 means no enemy, just a blank info screen.
 
-02100790 - Current game mode.
+02100790,1 - Current game mode.
   0 - Shanoa mode.
   1 - Albus mode.
   2 - Boss rush mode.
   3 - ?
   4 - Practice mode.
-02100791 - 
-02100792 - Current playable character.
+02100791,1 - 
+02100792,1 - Current playable character.
   0 - Shanoa.
   1 - Arma Felix.
   2 - Arma Chiroptera.
   3 - Arma Machina.
   4 - Albus.
-02100794 - Current difficulty.
+02100794,1 - Current difficulty.
   0 - Normal mode.
   1 - Hard mode.
-0210079A - Max level.
+02100797,1 - Music volume.
+02100798,1 - SFX volume.
+02100799,1 - Voice volume.
+0210079A,1 - Max level.
 0210079C,2 - Bonus HP given by HP max ups.
   Each HP max up gives +0x14 HP. The maximum is +0x258 HP, then any additional HP max ups do nothing. That's equivalent to 0x1E HP max ups in total.
 0210079E,2 - Bonus MP given by MP max ups.
   Each MP max up gives +0xA MP. The maximum is +0x12C MP, then any additional MP max ups do nothing. That's equivalent to 0x1E MP max ups in total.
+021007A0,2 - Bonus hearts given by heart max ups.
+  Each heart max up gives +0xA hearts. The maximum is +0x12C hearts, then any additional heart max ups do nothing. That's equivalent to 0x1E heart max ups in total.
 
 021007A2-021007B9 - List of items currently in wooden/green chests in this area.
   There are 0xC items in this list, each is a halfword.
@@ -491,23 +548,18 @@ A 200% attack boost (triple) takes 0xFFFF (0d65535) AP.
 === 021092A0 - 0211DF5F: Entities currently loaded into memory. Each is 0x160 bytes long. They range from 0-F1.
 
 What each range of entity slots is for:
-00-03 Used when the game is booting up
-04-04 Player.
-06-06 ?
-08-10 Player skills.
-2A-2A ?
-2D-7C Room entities, including enemies and special objects.
-7D-E8 Various small things including particles and enemy projectiles.
-EA-EB Menus.
-EC-EC Used in term list?
-EE-EE Used when loading a save
-F0-F0 ?
-
-02109820-0210997F - Player (slot 04)
-02109DA0-0210A9FF - Player skill entities (slots 08-10).
-0210D080-02113E7F - Room entities (slots 2D-7C)
-02113E80-0211D2FF - Particles (slots 7D-E8)
-0211D460-0211D720 - Menus (slots EA-EB)
+00-03  021092A0-0210981F  Used when the game is booting up
+04-04  02109820-0210997F  Player.
+06-06  02109AE0-02109C3F  ?
+08-10  02109DA0-0210A9FF  Player skills.
+2A-2A  0210CC60-0210CDBF  ?
+2A-F1  0210CC60-0211DF5F  World map icons. (In practice it uses slots 2B-3D.)
+2D-7C  0210D080-02113E7F  Room entities, including enemies and special objects.
+7D-E8  02113E80-0211D2FF  Various things including particles and enemy projectiles.
+EA-EB  0211D460-0211D720  Menus.
+EC-EC  0211D720-0211D87F  Used in term list?
+EE-EE  0211D9E0-0211DB3F  Used when loading a save
+F0-F0  0211DCA0-0211DDFF  ?
 
 02109820 - Start of the player's entity memory.
 02109850 - Player's x pos.
@@ -683,6 +735,11 @@ Sprite info for the pause menu:
 022B5950 - List of palette pointers for each event actor.
 022B59D8
 022B5A1C
+
+022B5D60-022B5DAB - List of X and Y positions for each area's world map icon.
+  Entry length 4.
+  00,2: X pos of this area's icon. (Signed.)
+  02,2: Y pos of this area's icon. (Signed.)
 
 022B6BF4 - List of pointers to lists of breakable walls for each area.
   Each area's list:

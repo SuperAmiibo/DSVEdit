@@ -37,6 +37,10 @@ class Map
     @secret_door_list_pointer = fs.read(MAP_SECRET_DOOR_LIST_START_OFFSET + area_index*4, 4).unpack("V*").first
     @row_widths_list_pointer = fs.read(MAP_ROW_WIDTHS_LIST_START_OFFSET + area_index*4, 4).unpack("V*").first
     
+    # These attributes are in pairs of two tiles, so double them so they're in tiles.
+    @draw_x_offset *= 2
+    @draw_y_offset *= 2
+    
     @tiles = []
     (0..number_of_tiles-1).each do |i|
       tile_line_data = fs.read(map_tile_line_data_ram_pointer + i).unpack("C").first
@@ -52,8 +56,8 @@ class Map
       tiles_with_secret_doors.each_with_index do |tile, i|
         tile_index = tiles.index(tile)
         
-        map_tile_index, secret_door_index = fs.read(secret_door_list_pointer + i*4, 4).unpack("v*")
-        secret_door = SecretDoor.new(map_tile_index, secret_door_index, tiles)
+        secret_door_pointer = secret_door_list_pointer + i*4
+        secret_door = SecretDoor.new(secret_door_pointer, fs)
         
         if secret_door.map_tile_index >= tile_index
           @secret_doors << secret_door
@@ -141,7 +145,7 @@ class Map
     fs.write(MAP_SIZES_LIST_START_OFFSET + area_index*2, [@width, @height].pack("CC"))
     
     # TODO add gui to allow manually setting draw x/y offset
-    fs.write(MAP_DRAW_OFFSETS_LIST_START_OFFSET + area_index*2, [@draw_x_offset, @draw_y_offset].pack("CC"))
+    fs.write(MAP_DRAW_OFFSETS_LIST_START_OFFSET + area_index*2, [@draw_x_offset/2, @draw_y_offset/2].pack("CC"))
   end
   
   def is_abyss
@@ -277,21 +281,26 @@ class MapTile
 end
 
 class SecretDoor
-  attr_reader :map_tile_index,
-              :secret_door_index,
-              :map_tile
+  attr_reader :secret_door_pointer,
+              :fs
+  attr_accessor :map_tile_index,
+                :secret_door_index
   
-  def initialize(map_tile_index, secret_door_index, all_map_tiles)
-    @map_tile_index  = map_tile_index
-    @secret_door_index = secret_door_index
-    
-    @map_tile = all_map_tiles[@map_tile_index]
+  def initialize(secret_door_pointer, fs)
+    @fs = fs
+    @map_tile_index, @secret_door_index = fs.read(secret_door_pointer, 4).unpack("vv")
+  end
+  
+  def write_to_rom
+    fs.write(secret_door_pointer, [@map_tile_index, @secret_door_index].pack("vv"))
   end
 end
 
 class DoSMap < Map
   attr_reader :is_abyss,
-              :warp_rooms
+              :warp_rooms,
+              :secret_rooms,
+              :secret_room_list_pointer
   
   def initialize(area_index, sector_index, game)
     @area_index = area_index
@@ -316,6 +325,9 @@ class DoSMap < Map
       @map_tile_line_data_ram_pointer = ABYSS_MAP_TILE_LINE_DATA_START_OFFSET
       @number_of_tiles = ABYSS_MAP_NUMBER_OF_TILES
       @secret_door_list_pointer = ABYSS_MAP_SECRET_DOOR_DATA_START_OFFSET
+      @secret_room_list_pointer = nil
+      @draw_x_offset_pointer = ABYSS_MAP_DRAW_X_OFFSET_LOCATION
+      @draw_y_offset_pointer = ABYSS_MAP_DRAW_Y_OFFSET_LOCATION
     else
       @width = 64
       
@@ -323,6 +335,9 @@ class DoSMap < Map
       @map_tile_line_data_ram_pointer = MAP_TILE_LINE_DATA_START_OFFSET
       @number_of_tiles = MAP_NUMBER_OF_TILES
       @secret_door_list_pointer = MAP_SECRET_DOOR_DATA_START_OFFSET
+      @secret_room_list_pointer = MAP_SECRET_ROOM_DATA_START_OFFSET
+      @draw_x_offset_pointer = MAP_DRAW_X_OFFSET_LOCATION
+      @draw_y_offset_pointer = MAP_DRAW_Y_OFFSET_LOCATION
     end
     
     @tiles = []
@@ -354,16 +369,42 @@ class DoSMap < Map
       @secret_doors = []
       i = 0
       while true
-        x_pos, y_pos = fs.read(secret_door_list_pointer + i*2, 2).unpack("C*")
+        secret_door_pointer = secret_door_list_pointer + i*2
+        x_pos, y_pos = fs.read(secret_door_pointer, 2).unpack("C*")
         
         if x_pos == 0xFF && y_pos == 0xFF
           break
         end
         
-        @secret_doors << DoSSecretDoor.new(x_pos, y_pos)
+        @secret_doors << DoSSecretDoor.new(secret_door_pointer, fs)
         
         i += 1
       end
+    end
+    
+    if @secret_room_list_pointer
+      @secret_rooms = []
+      i = 0
+      while true
+        secret_room_pointer = secret_room_list_pointer + i*2
+        sector_index, room_index = fs.read(secret_room_pointer, 2).unpack("C*")
+        
+        if sector_index == 0xFF && room_index == 0xFF
+          break
+        end
+        
+        @secret_rooms << DoSSecretRoom.new(secret_room_pointer, fs)
+        
+        i += 1
+      end
+    end
+    
+    if @draw_x_offset_pointer
+      @draw_x_offset = game.fs.read(@draw_x_offset_pointer, 1).unpack("C").first
+      @draw_y_offset = game.fs.read(@draw_y_offset_pointer, 1).unpack("C").first
+    else
+      @draw_x_offset = 0
+      @draw_y_offset = 0
     end
     
     if GAME == "dos"
@@ -413,24 +454,32 @@ class DoSMap < Map
       end
     end
     
+    if @draw_x_offset_pointer
+      # Round these down to the nearest multiple of 2, since odd numbered draw offsets cause the entire map to render glitched.
+      @draw_x_offset = @draw_x_offset/2*2
+      @draw_y_offset = @draw_y_offset/2*2
+      game.fs.write(@draw_x_offset_pointer, [@draw_x_offset].pack("C"))
+      game.fs.write(@draw_y_offset_pointer, [@draw_y_offset].pack("C"))
+    end
+    
     if is_abyss
       # Do nothing.
     elsif GAME == "dos"
       warp_rooms_x_sorted = warp_rooms.sort_by{|tile| [tile.x_pos_in_tiles, tile.y_pos_in_tiles] }
       warp_rooms_y_sorted = warp_rooms.sort_by{|tile| [tile.y_pos_in_tiles, tile.x_pos_in_tiles] }
-      warp_rooms.each do |warp_room|
+      warp_rooms.each_with_index do |warp_room, warp_index|
         warp_room.x_pos_in_pixels = warp_room.x_pos_in_tiles*4
         warp_room.y_pos_in_pixels = warp_room.y_pos_in_tiles*4
         warp_room.x_index         = warp_rooms_x_sorted.index(warp_room)
         warp_room.y_index         = warp_rooms_y_sorted.index(warp_room)
         
         warp_tile = @tiles.find{|tile| tile.x_pos == warp_room.x_pos_in_tiles && tile.y_pos == warp_room.y_pos_in_tiles}
-        if warp_tile && !warp_tile.is_blank
-          warp_room.sector_index = warp_tile.sector_index
-          warp_room.room_index = warp_tile.room_index
-        elsif warp_room.x_pos_in_tiles == 54 && warp_room.y_pos_in_tiles == 42
+        if warp_index == 0xB
           warp_room.sector_index = 0xB
           warp_room.room_index = 0x23
+        elsif warp_tile && !warp_tile.is_blank
+          warp_room.sector_index = warp_tile.sector_index
+          warp_room.room_index = warp_tile.room_index
         else
           warp_room.sector_index = 0
           warp_room.room_index = 0
@@ -598,13 +647,14 @@ class DoSMapTile
 end
 
 class DoSSecretDoor < SecretDoor
-  attr_reader :x_pos,
-              :y_pos,
-              :door_side
+  attr_accessor :x_pos,
+                :y_pos,
+                :door_side
   
-  def initialize(x_pos, y_pos)
-    @x_pos = x_pos
-    @y_pos = y_pos
+  def initialize(secret_door_pointer, fs)
+    @fs = fs
+    @secret_door_pointer = secret_door_pointer
+    @x_pos, @y_pos = fs.read(secret_door_pointer, 2).unpack("CC")
     
     if @y_pos >= 0x80
       # If y is negative the door is on the left of the tile.
@@ -614,6 +664,35 @@ class DoSSecretDoor < SecretDoor
       # If y is positive the door is on the top of the tile.
       @door_side = :top
     end
+  end
+  
+  def write_to_rom
+    if @x_pos == 0xFF && @y_pos == 0xFF
+      # End marker.
+      y_and_door_side = @y_pos
+    elsif @door_side == :left
+      y_and_door_side = (-@y_pos & 0xFF) # Negate y.
+    else
+      y_and_door_side = @y_pos
+    end
+    fs.write(secret_door_pointer, [@x_pos, y_and_door_side].pack("CC"))
+  end
+end
+
+class DoSSecretRoom
+  attr_reader :secret_room_pointer,
+              :fs
+  attr_accessor :sector_index,
+                :room_index
+  
+  def initialize(secret_room_pointer, fs)
+    @fs = fs
+    @secret_room_pointer = secret_room_pointer
+    @sector_index, @room_index = fs.read(secret_room_pointer, 2).unpack("CC")
+  end
+  
+  def write_to_rom
+    fs.write(secret_room_pointer, [@sector_index, @room_index].pack("CC"))
   end
 end
 

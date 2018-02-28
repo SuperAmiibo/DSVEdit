@@ -17,7 +17,16 @@
 
 02078CAC-02079D43 - Enemy DNA list.
 
-02079D7C - List of layer scroll modes.
+02079D44-02079D5B - List of secret rooms (rooms that shouldn't show up on the map even if you have a map item for that sector).
+  Entry length 2.
+  00,1: Sector index of this secret room.
+  01,1: Room inex of this secret room.
+  The end of the list is marked by FF FF.
+
+02079D5C-02079D7B - The palette for the map.
+  This is not a palette list, just a single palette without the usual palette header.
+
+02079D7C-02079E53 - List of layer scroll modes.
   Each is 0xC bytes long.
   00,4: Horizontal scrolling multiplier (0x1000 = 1.0).
   04,4: Vertical scrolling multiplier (0x1000 = 1.0).
@@ -27,8 +36,9 @@
       Word 00 is the speed of horizontal scrolling.
       Word 04 is the speed of vertical scrolling.
 
-0207ABEC - Layer metadata for the background of the bestiary.
-  Yes, menu backgrounds are handled very similarly to room layers.
+0207ABEC-0207ABFB - Layer metadata for the background of the bestiary.
+0207ABFC-0207AD7B - Layer tile list for the background of the bestiary.
+  Menu backgrounds are handled very similarly to room layers.
 
 02086394-0208A393 - List of sine and cosine values.
   Entry length 4.
@@ -191,21 +201,23 @@ There are 41 entries in the list total.
 
 020CA398 - normally 0, if 1 then soma can't move. but the game puts it back to 0 if you try to make it 1, so you need a cheat to stop soma from moving (or vice versa).
 
-020CA39C - Bitfield of what buttons the player is pressing. Unlike 020CA388, this is sometimes 0 even when the player is pressing buttons. TODO
+020CA39C,2 - Bitfield of what buttons the player is pressing.
+020CA3A0,2 - Bitfield of what buttons the player just pressed this frame.
+    Unlike 020CA388 and 020CA38C, these are sometimes 0 even when the player is pressing buttons. TODO
 
 === 020CA3F0 - 020F6DEF: Entities currently loaded into memory. Each is 2A0 bytes long. They range from 0-10F.
 
 What each range of entity slots is for:
-002-002 Player.
-004-004 
-01C-028 Player skills.
-029-02C Player weapons.
-02D-02D 
-030-080 Room entities, including enemies and special objects.
-081-0EF Various small things including particles and enemy projectiles.
-0F2-0F2 
-10E-10E 
-10F-10F 
+002-002  020CA930-020CABCF  Player.
+004-004  020CAE70-020CB10F  ?
+01C-028  020CED70-020D0F8F  Player skills.
+029-02C  020D0F90-020D1A0F  Player weapons.
+02D-02D  020D1A10-020D1CAF  ?
+030-080  020D21F0-020DF68F  Room entities, including enemies and special objects.
+081-0EF  020DF690-020F19EF  Various things including particles and enemy projectiles.
+0F2-0F2  020F1F30-020F21CF  ?
+10E-10E  020F68B0-020F6B4F  ?
+10F-10F  020F6B50-020F6DEF  ?
 
 020CA930 - Start of the player's entity memory.
 020CA95C,020CA960 - The player's x pos and y pos.
@@ -269,7 +281,15 @@ What each range of entity slots is for:
   04 - Selecting what warp to go.
   06 - Arriving at a warp room after warping.
 020F6DF5 - 00 or 01. Affects the above variable.
-020F6DF9 - 0 is normal, 3 is inside a mirror.
+
+020F6DF8,1 - Timer for how long to remain in the current mirror world state (see below).
+020F6DF9,1 - Mirror world state.
+  0 - Normal, not in the mirror world.
+  1 - Starting to enter a mirror.
+  2 - Finishing entering a mirror.
+  3 - In the mirror world fully.
+  4 - Starting to exit a mirror.
+  5 - Finishing exiting a mirror.
 
 020F6DFC-020F6DFF - Bitfield of global game flags.
   0x00000001 - Disables controls. Used during events and while warping.
@@ -282,6 +302,7 @@ What each range of entity slots is for:
   0x00040000 - Used whenever an event is active, even if the player has control, such as during the prologue fight. Also set when the player is in a transition room.
   0x00100000 - Freezes Soma. He won't animate, take damage, be affected by gravity or momentum, or respond to player input. Used when loading the next room.
   0x02000000 - Set in rooms with mirrors. Can affect zombie somehow, sometimes making him invisible?
+  0x04000000 - Set when playing the character swap animation in Julius mode.
   0x08000000 - Set when the game is paused.
   0x10000000 - Makes all enemy souls drops have a 100% chance. Used during the prologue.
   0x40000000 - Set when you haven't saved the game once yet. Disables suspending.
@@ -620,7 +641,11 @@ Player's current stats:
 0210F014 - Player's current Y pos on the map?
 0210F018 - Player's current X pos on the map?
 
-0210FA00 - List of pixel data for the currently drawn map.
+0210F040 - List of pixel data for the currently drawn map.
+  In one-dimensional graphics mode. So each pixel takes up a nibble, each 8x8 block takes up 0x20 bytes.
+  You can calculate the offset of a tile here like this: 
+    y_in_tiles/2*0x400 + x_in_tiles/2*0x20
+  Note that y_in_tiles and x_in_tiles need to have the map draw offsets added to them already.
 
 Stuff related to currently loaded tilesets:
 02115064,4 - Which tile GFX asset index to load next.
@@ -726,6 +751,14 @@ Here's what each actor is (index, special object id, description):
   08 5B Alucard (missing gfx pages)
   09 52 Julius NPC (missing gfx page)
 
+0222DF68-0222DFA7 - List of character swap voices.
+  Entry length 0x10.
+  The index in this list is the character you're swapping from.
+  00,4: Voice for this character to play when swapping to Soma (unused).
+  04,4: Voice for this character to play when swapping to Julius.
+  08,4: Voice for this character to play when swapping to Yoko.
+  0C,4: Voice for this character to play when swapping to Alucard.
+
 0222DFEC-0222E1FB - List of which sprite animations are for which player states for each player character (state anims).
   The pointer at offset C in player data points to the appropiate entry in this list.
   Specific pointers for each player:
@@ -761,7 +794,8 @@ Here's what each actor is (index, special object id, description):
   03,1: ?
   04,1: ?
 
-0222E5EC - List of player base stats. Halfwords.
+0222E5EC-0222E5FB - List of starting/base stats for the player.
+  These are shared by all player characters.
   0222E5EC,2 - Unused (would be ATK, but gets overwritten after being copied.)
   0222E5EE,2 - DEF
   0222E5F0,2 - STR

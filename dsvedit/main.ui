@@ -278,7 +278,6 @@
     <addaction name="actionEdit_Doors"/>
     <addaction name="actionEdit_Room_Props"/>
     <addaction name="separator"/>
-    <addaction name="actionAdd_New_Layer"/>
     <addaction name="actionEdit_Layers"/>
    </widget>
    <addaction name="menuFile"/>

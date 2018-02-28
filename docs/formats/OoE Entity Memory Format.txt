@@ -17,6 +17,9 @@ Memory used for entities in OoE is 021092A0 - 0211DF5F. Each entity is 0x160 byt
 038,4: Z pos.
 03C,4: X velocity.
 040,4: Y velocity.
+044,4: Movement speed.
+  This is the absolute speed value this entity should move at, without taking direction into account.
+  Currently only Skull Spider is known to use this.
 048,4: X friction.
 04C,4: Y acceleration (gravity).
 064,2: Rotation.
@@ -46,7 +49,7 @@ Memory used for entities in OoE is 021092A0 - 0211DF5F. Each entity is 0x160 byt
 084,2: Current sprite frame index.
 086,2: Palette index in the list of globally loaded palettes.
 088,2: Palette index in the list of globally loaded palettes. Unused?
-08A,2: Palette offset for this entity. Gets added to 86.
+08A,2: Palette offset for this entity. Gets added to the value at 086,2.
 08E,2: Polygon attributes to use when drawing this entity.
   Refer to GBATEK for details.
 090,10: Affects color tint of this entity. 1F for everything means normal colored.
@@ -105,8 +108,14 @@ For used skills:
 124,4: Pointer to the entity who used this skill (e.g. 02109820 if the player used it).
 128,2: Globally unique ID of the entity who used this skill.
 
+For summons:
+12E,2: The summon's level. 1-3.
+  This acts as a multiplier to certain things like damage dealt and movement speed.
+140,4: Which summon index (e.g. 1 for Fidelis Aranea)
+
 For the player:
 0D0,4: Bitfield of player state booleans.
   For glyphs, ?
 0DC,4: Bitfield of ?
   00080000 - Do not interrupt the player's current animation when landing.
+0ED,1: Which player character index this player is. 0 is Shanoa, 1 is Arma Felix, etc.

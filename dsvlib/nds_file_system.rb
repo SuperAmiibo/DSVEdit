@@ -251,7 +251,7 @@ class NDSFileSystem
   def write_by_file(file_path, offset_in_file, new_data, freeing_space: false)
     file = files_by_path[file_path]
     if offset_in_file + new_data.length > file[:size]
-      raise OffsetPastEndOfFileError.new("Offset %08X is past end of file #{file_path} (%08X bytes long)" % [offset_in_file, file[:size]])
+      raise OffsetPastEndOfFileError.new("Offset %08X (length %08X) is past end of file #{file_path} (%08X bytes long)" % [offset_in_file, new_data.length, file[:size]])
     end
     
     file_data = get_file_data_from_opened_files_cache(file_path)
@@ -845,7 +845,10 @@ private
     offset = 0x00
     while offset < @file_allocation_table_size
       @files[id][:start_offset], @files[id][:end_offset] = file_allocation_table_data[offset,8].unpack("VV")
-      @files[id][:size] = @files[id][:end_offset] - @files[id][:start_offset]
+      if @files[id][:size].nil?
+        # Don't overwrite the correct size that was already read for overlays with the possibly outdated guess size here.
+        @files[id][:size] = @files[id][:end_offset] - @files[id][:start_offset]
+      end
       
       id += 1
       offset += 0x08
