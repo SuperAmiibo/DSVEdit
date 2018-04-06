@@ -350,7 +350,7 @@
 020299B0 UpdateCurrentlyPlayingSong
   ; Plays the current song index (02115384) unless it's equal to the previous song index (0211538C). Then it updates 0211538C.
 
-0204F4D8 PlayBGMOrSfX???
+0204F4D8 PlayBGMOrSfx???
   ; r0 - Song index
   ; r1 - 0?
   ; r2 - 0?
@@ -391,6 +391,17 @@
   ; This sets the player's animation state and calls SetSpriteAnimAndPropertiesIfDifferentSafe.
   ; Note that if the player has a next animation state set at player+0F0, this function will prevent that specific animation state from being set before the current animation is finishes playing. This is useful for e.g. playing the landing animation instead of the idle animation when the player touches the ground.
 
+021F8178 PlayerGetAttackAnimationIndex
+  ; r0 - Player entity
+  ; r1 - Animation state index. Should be between 3C-40 since those are the attacking animation states.
+  ; If the player is not Soma, or it is Soma but his "Can use weapons" bit is not set, then it simply returns the animation index for the given animation state.
+  ; If the player is Soma and his "Can use weapons" bit is set, it instead reads the appropriate weapon swing animation index from list 0222DFA8.
+
+0221268C GetCurrentWeaponDataPointer
+022126AC GetWeaponDataPointer
+  ; r0 - Weapon index
+  ; Returns a pointer to the weapon's item data
+
 0200705C GetCurrentSector
 02007104 GetCurrentSectorRoomIndexesFromMap
   ; r0 - 0 if in the castle, 1 if in the abyss, 2 if not on any map.
@@ -425,6 +436,10 @@
   ; Calculates the damage an enemy should do to the player.
   ; r0 - Base damage.
   ; r1 - Damage types bitfield.
+021C4298 CalcDamageToEnemy
+  ; Calculates the damage a player/player weapon/player skill should do to an enemy.
+  ; r0 - Enemy entity taking damage (entity+0xA4 pointer)
+  ; r1 - Player/player weapon/player skill entity dealing damage (entity+0xA4 pointer)
 
 021C5250 SkillDraw?
   ; used by killer fish soul, check if others use it
@@ -605,6 +620,10 @@
   ; r2 - Resistances
   ; r3 - Weaknesses
   ; Only stores these if the entity's hitbox is active (entity+A6)
+021C347C SetDefensesFromEnemyDNA
+  ; r0 - Entity pointer
+  ; r1 - Enemy ID
+  ; Reads physical defense from entity+26C and weaknesses and resistances from the enemy's DNA, then calls SetDefenses.
 02014374 SetIframes
   ; r0 - Entity pointer
   ; r1 - Iframes

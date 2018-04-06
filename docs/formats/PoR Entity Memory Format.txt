@@ -82,7 +82,8 @@ Memory used for entities in PoR is 020FC500 - 0211173F. Each entity is 0x160 byt
   This function pointer is called when the entity collides with a player weapon.
 0DC,2: Counter?
 0DE,2: Counter?
-0EC,2: Pointer to child entity?
+0EC,4: Pointer to child entity?
+0F0,4: Pointer to another child entity?
 0FC,2: 
 120,4: Bitfield of ???.
   0x20 - ? something checked many times by enemies.
@@ -121,6 +122,7 @@ For players:
 12C,4: Drawn x pos offset for the katar critical.
 130,4: Drawn y pos offset for the axe critical.
 144,1: Most recent weapon index swung.
+146,1: Most recent button combo index input.
 
 For room entities:
 132,1: Subtype.

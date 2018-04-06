@@ -25,6 +25,7 @@ require_relative 'player_editor_dialog'
 require_relative 'special_object_editor_dialog'
 require_relative 'weapon_synth_editor_dialog'
 require_relative 'shop_editor_dialog'
+require_relative 'quest_editor_dialog'
 require_relative 'tileset_chooser_dialog'
 require_relative 'door_editor_dialog'
 require_relative 'magic_seal_editor_dialog'
@@ -64,6 +65,7 @@ class DSVEdit < Qt::MainWindow
   slots "open_special_object_editor()"
   slots "open_weapon_synth_editor()"
   slots "open_shop_editor()"
+  slots "open_quest_editor()"
   slots "open_magic_seal_editor()"
   slots "open_armips_patcher()"
   slots "add_new_overlay()"
@@ -143,6 +145,7 @@ class DSVEdit < Qt::MainWindow
     connect(@ui.actionSpecial_Object_Editor, SIGNAL("activated()"), self, SLOT("open_special_object_editor()"))
     connect(@ui.actionWeapon_Synth_Editor, SIGNAL("activated()"), self, SLOT("open_weapon_synth_editor()"))
     connect(@ui.actionShop_Editor, SIGNAL("activated()"), self, SLOT("open_shop_editor()"))
+    connect(@ui.actionQuest_Editor, SIGNAL("activated()"), self, SLOT("open_quest_editor()"))
     connect(@ui.actionMagic_Seal_Editor, SIGNAL("activated()"), self, SLOT("open_magic_seal_editor()"))
     connect(@ui.actionApply_ARMIPS_Patch, SIGNAL("activated()"), self, SLOT("open_armips_patcher()"))
     connect(@ui.actionAdd_Overlay, SIGNAL("activated()"), self, SLOT("add_new_overlay()"))
@@ -212,6 +215,7 @@ class DSVEdit < Qt::MainWindow
     @ui.actionSpecial_Object_Editor.setEnabled(false);
     @ui.actionWeapon_Synth_Editor.setEnabled(false);
     @ui.actionShop_Editor.setEnabled(false);
+    @ui.actionQuest_Editor.setEnabled(false);
     @ui.actionMagic_Seal_Editor.setEnabled(false);
     @ui.actionApply_ARMIPS_Patch.setEnabled(false);
     @ui.actionAdd_Overlay.setEnabled(false);
@@ -258,6 +262,7 @@ class DSVEdit < Qt::MainWindow
     @ui.actionSpecial_Object_Editor.setEnabled(true);
     @ui.actionWeapon_Synth_Editor.setEnabled(true);
     @ui.actionShop_Editor.setEnabled(true);
+    @ui.actionQuest_Editor.setEnabled(true);
     @ui.actionMagic_Seal_Editor.setEnabled(true);
     @ui.actionApply_ARMIPS_Patch.setEnabled(true);
     @ui.actionAdd_Overlay.setEnabled(true);
@@ -279,7 +284,7 @@ class DSVEdit < Qt::MainWindow
       @ui.actionWeapon_Synth_Editor.setVisible(false);
       @ui.actionMagic_Seal_Editor.setVisible(false);
       @ui.actionPlayer_State_Anims_Editor.setVisible(false);
-      @ui.set_as_transmit_room.setVisible(true);
+      #@ui.set_as_transmit_room.setVisible(true);
       if REGION == :cn
         @ui.actionText_Editor.setVisible(false);
       else
@@ -975,6 +980,14 @@ class DSVEdit < Qt::MainWindow
     @open_dialogs << ShopEditor.new(self, game)
   end
   
+  def open_quest_editor
+    if ["por", "ooe"].include?(GAME)
+      @open_dialogs << QuestEditor.new(self, game)
+    else
+      Qt::MessageBox.warning(self, "Can't edit quests", "Only PoR and OoE have quests.")
+    end
+  end
+  
   def open_magic_seal_editor
     if GAME == "dos"
       @open_dialogs << MagicSealEditorDialog.new(self, @renderer)
@@ -1117,6 +1130,11 @@ class DSVEdit < Qt::MainWindow
   end
   
   def import_from_tiled
+    if @room.layers.length == 0
+      Qt::MessageBox.warning(self, "Room has no layers", "Cannot edit a room that has no layers. Open the layers editor in order to create a layer list for this room.")
+      return
+    end
+    
     folder = "cache/#{GAME}/rooms"
     tmx_path = "#{folder}/#{@room.area_name}/#{@room.filename}.tmx"
     if !File.exist?(tmx_path) || !File.file?(tmx_path)

@@ -337,8 +337,8 @@ ENEMY_DNA_BITFIELD_ATTRIBUTES = {
     "Weakness 23",
     "Weakness 24",
     "Weakness 25",
-    "Weakness 26",
-    "Weakness 27",
+    "Arm glyphs",
+    "Glyph unions",
     "Weakness 28",
     "Weakness 29",
     "Weakness 30",
@@ -377,7 +377,7 @@ ENEMY_DNA_BITFIELD_ATTRIBUTES = {
     "Resistance 29",
     "Resistance 30",
     "Resistance 31",
-    "Resistance 32",
+    "Don't load GFX",
   ],
 }
 
@@ -805,7 +805,7 @@ ARM_GLYPH_FORMAT = [
   [4, "Unwanted States", :bitfield],
   [2, "Icon"],
   [2, "Swing Modifiers", :bitfield],
-  [2, "Swing Anim/???"],
+  [2, "Var A"],
   [1, "IFrames"],
   [1, "Delay"],
   [4, "Swing Sound"],
@@ -987,7 +987,7 @@ ITEM_BITFIELD_ATTRIBUTES = {
     "Resistance 23",
     "Resistance 24",
     "Resistance 25",
-    "Resistance 26",
+    "(Enemy-used) Arm glyphs",
     "Resistance 27",
     "Resistance 28",
     "Resistance 29",
@@ -1021,8 +1021,8 @@ ITEM_BITFIELD_ATTRIBUTES = {
     "Effect 23",
     "Effect 24",
     "Effect 25",
-    "Effect 26",
-    "Effect 27",
+    "Is an arm glyph",
+    "Is a glyph union",
     "Effect 28",
     "Effect 29",
     "Effect 30",
@@ -1370,3 +1370,28 @@ PLAYER_ANIM_STATE_NAMES = [
   "",
   "",
 ]
+
+QUEST_LIST_POINTER = 0x020F58B0
+QUEST_COUNT = 0x24
+QUEST_LIST_FORMAT = [
+  # length: 0x10
+  [2, "Reward"],
+  [2, "Unused 1"],
+  [4, "Requirements Pointer"],
+  [1, "Quest Modifiers", :bitfield],
+  [1, "Unused 2"],
+  [2, "Unused 3"],
+  [4, "Unused 4"],
+]
+QUEST_BITFIELD_ATTRIBUTES = {
+  "Quest Modifiers" => [
+    "Reward is gold",
+    "Unknown 1",
+    "Is a kill quest",
+    "Unknown 3",
+    "Unused 4",
+    "Unused 5",
+    "Unused 6",
+    "Unused 7",
+  ],
+}

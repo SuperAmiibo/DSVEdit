@@ -1,26 +1,33 @@
 
-require_relative 'ui_player_editor'
+require_relative 'ui_quest_editor'
 
-class PlayerEditor < Qt::Dialog
+class QuestEditor < Qt::Dialog
   slots "button_pressed(QAbstractButton*)"
   
   def initialize(main_window, game)
     super(main_window, Qt::WindowTitleHint | Qt::WindowSystemMenuHint)
-    @ui = Ui_PlayerEditor.new
+    @ui = Ui_QuestEditor.new
     @ui.setup_ui(self)
     
     @game = game
     @fs = game.fs
     
-    player_type = {
-      name: "Players",
-      list_pointer: PLAYER_LIST_POINTER,
-      count: PLAYER_COUNT,
-      kind: :player,
-      format: PLAYER_LIST_FORMAT
+    quest_type = {
+      name: "Quests",
+      list_pointer: QUEST_LIST_POINTER,
+      count: QUEST_COUNT,
+      kind: :quest,
+      format: QUEST_LIST_FORMAT
     }
-    @editor_widget = GenericEditorWidget.new(game.fs, game, player_type, main_window.game.player_format_doc, custom_editable_class: Player)
+    @editor_widget = GenericEditorWidget.new(game.fs, game, quest_type, main_window.game.quest_format_doc, custom_editable_class: Quest)
     @ui.horizontalLayout.addWidget(@editor_widget)
+    
+    # Adjust some of the text field sizes to be bigger for quests.
+    @editor_widget.ui.item_name.maximumWidth = 250
+    @editor_widget.ui.item_desc.maximumHeight = 92
+    @editor_widget.ui.horizontalLayout.setStretch(0, 4)
+    @editor_widget.ui.horizontalLayout.setStretch(1, 5)
+    @editor_widget.ui.horizontalLayout.setStretch(2, 6)
     
     connect(@ui.buttonBox, SIGNAL("clicked(QAbstractButton*)"), self, SLOT("button_pressed(QAbstractButton*)"))
     

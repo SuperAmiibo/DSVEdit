@@ -76,10 +76,23 @@
 020DFD40 - List of quests.
   Entry length 0x10.
   00,2 Global ID+1 of the item to give as a reward. Skills start at 151.
-  04,2 Affects conditions to complete the quest somehow?
+    If this is 0, the reward is not an item (at least not a normal one).
+  02,2: Text index of the line for Wind to say when you complete the quest.
+  04,2: Specifies the type of quest's reward and requirements.
     Bit indexes:
-      00-05: ???
-      06-0B: ???
+      00 0001 - Reward is an item.
+      01 0002 - Reward is a subweapon or spell.
+      02 0004 - Reward is a relic.
+      03 0008 - Reward is an HP Max Up.
+      04 0010 - Reward is an MP Max Up.
+      05 0020 - Reward is unlocking Nest of Evil?
+      06 0040 - Requirement is obtaining one or more items.
+      07 0080 - Requirement is killing an enemy?
+      08 0100 - Requirement is having a certain amount of money.
+      09 0200 - Requirement is some kind of player status, like being cursed, wearing certain equipment, mastering a certain subweapon, etc. Maybe this means it should be checked when talking to Wind???
+      0A 0400 - Requirement is inputting a button combo?
+      0B 0800 - Requirement is for the Lonely Stage with the ghost?
+      0C 1000 - ??? Only set for the first quest, Preparations
 020DFCA0 - List of pointers to functions that check quest completion conditions. For example, checking certain flags. Use the quest index as the index in this list.
 
 020E0028-020E003B - List of pointers that each point to a list of items that get unlocked in the shop by certain boss deaths.
@@ -199,6 +212,14 @@
   Each entry is 0x14 bytes long.
   00,2: 
   04,1:
+
+020FB520-020FB79F - List of currently loaded room entity palettes.
+  Entry length 8.
+  Number of entries: 0x50.
+  01,1: Number of palettes from this list loaded.
+    This number of sequential entries are taken up. So if this is 4, then this entry is used, and the next 3 entries are full of zeroes but still reserved and not allowed to be used.
+  04,4: The palette list pointer.
+  Room entity palettes start being loaded at index 0xA1 in the list of globally loaded palettes, so take an index in this list and add 0xA1 to get an index in list 0211ABE0.
 
 020FB798-020FB89B - List of something related to entities?
   There are 0x41 entries here. Each is a word.
@@ -526,6 +547,7 @@ F5-F5  021115E0-0211173F  ?
 02111F55 - Difficulty.
   0 - Normal mode
   1 - Hard mode.
+  Hard mode reduces the damage the player does to enemies to 0.75x.
 02111F56 - Which player character you're controlling.
 02111F57 - Which player number you're controlling.
   0 - Player 1.
@@ -785,34 +807,52 @@ TODO: What are the other 2 for? It's not for the "recent" tab.
 0221E05C-0221E06B - List of button combos.
   Each entry is just a pointer. They point to:
 0221E00C-0221E02B - These are lists of ? for each button combo.
-  Bytes 1-2: ?
-  Bytes 3-4: ?
-  Bytes 5-8: Pointer to list of buttons that need to be pressed to trigger this combo:
+  00,2: ?
+  02,2: ?
+  04,4: Pointer to list of buttons that need to be pressed to trigger this combo:
 0221E004-? - These are lists of buttons for each button combo.
-  Simply a list of buttons that must be pressed in what order. Each button is 2 bytes long.
+  Simply a list of buttons that must be pressed in what order. Each button is a halfword.
+  The different buttons are:
+    0001 - A
+    0002 - B
+    0004 - Select
+    0008 - Start
+    0010 - Right
+    0020 - Left
+    0040 - Up
+    0080 - Down
+    0100 - R
+    0200 - L
+    0400 - X
+    0800 - Y
+    2000 - Debug
   For example, 0010 0000 0010 means you must press forward, then nothing, then forward.
   The list ends when you see FFFF.
 
 0221E09C - Something related to cutin portraits for Jonathan and Charlotte?
   /sc/f_fjona00.dat uses palette 022C5B10
 
-0221E1DC-0221E23D - List of which voice line to play when switching from one character to another.
-  Halfwords. These are the SFX index of the voice line to use.
-  If an entry is 0, then it just plays no sound instead.
+0221E1DC-0221E23D - List of which voice SFX index to play when switching from one character to another.
+  Halfwords.
   The index in this list is the character you're switching from times 7, plus the character you're switching to.
   In other words, every combination of one character switching to another is accounted for (7*7 possibilities).
+  If an entry is 0, then it just plays no sound instead.
 
 0221E244 - List of which combo moves are for each player.
   This is pointed to by the player data.
   Each slot for a combo move is 1 byte long, each player has 4 slots. The byte is the index of the combo move in list 0221F070. 0 means no combo move.
+  Slot 0: Right right Y
   Slot 1: Up left down right Y
   Slot 2: Right down left right Y
   Slot 3: Right down left up right Y
-  Slot 4:
-0221F070 - List of criticals and combo moves. Each entry is 8 bytes long.
-  Bytes 1-4: Pointer to code for this move.
-  Byte 5: Mana cost.
-  Byte 6: If 0, you must be on the ground to do this combo move. Otherwise you can be in the air.
+
+0221E3A0-0221E3C7 - List of pointers to voice SFX indexes for grunts while swinging each weapon.
+  The index in this list is the weapon's Swing Anim.
+  If the entry is 0, no grunt voices are played while swinging this weapon.
+  Otherwise the entry is a pointer to a list of four voice SFX indexes, each entry in the list is a halfword.
+  Which of those four is used is randomly selected.
+  There's also a random 50% chance no voice will be played when swinging a weapon regardless.
+  If the randomly selected SFX index is 0000, it uses a player-dependent voice from list 0221E768 instead.
 
 0221E3F4-0221E42B - List of quickswap subweapons lists for each player character.
   Entry length 8.
@@ -850,7 +890,20 @@ TODO: What are the other 2 for? It's not for the "recent" tab.
   25-28 Weapons.
   29-2D ?
 
-0221E7F4 - List of player data for each character.
+0221E768-0221E7F3 - List of voice SFX indexes for each player.
+  Entry length 0x14, the index is the player character index.
+  00,2: SFX index for attacking (random 1).
+  02,2: SFX index for attacking (random 2).
+  04,2: SFX index for attacking (random 3).
+  06,2: SFX index for attacking (random 4).
+  08,2: SFX index for taking damage (random 1).
+  0A,2: SFX index for taking damage (random 2).
+  0C,2: SFX index for taking damage in the air and getting knocked back.
+  0E,2: SFX index for dying.
+  10,2: 
+  12,2: 
+
+0221E7F4-0221EA5B - List of player data for each character.
 
 0221EAF0-0221EB97 - List of starting/base stats for each player.
   Entry length 0x18.
@@ -873,9 +926,17 @@ TODO: What are the other 2 for? It's not for the "recent" tab.
   For dual crushes:      0006 0020 0001 0007 0009
 
 0221ED18 - List of skill gfx.
-0221F110 - List of weapon gfx. Same format as DoS.
 
-0221F000-0221F01F - List of weapon special effect code pointers.
+0221EFE0-0221EFFF - List of weapon special effect create code pointers.
+  00 00000000 No effect.
+  01 02216D84 Nebula.
+  02 02216700 Flame Whip.
+  03 02216700 Rahab's Frost.
+  04 02216700 Agni's Flame.
+  05 02216528 Heaven's Sword (throw the weapon straight in front of you, then it comes back to you).
+  06 02216700 Illusion Fist.
+  07 02216528 Tori (throw the weapon diagonally upwards, then it comes back to you).
+0221F000-0221F01F - List of weapon special effect update code pointers.
   00 00000000 No effect.
   01 02216708 Nebula.
   02 02216638 Flame Whip.
@@ -884,6 +945,7 @@ TODO: What are the other 2 for? It's not for the "recent" tab.
   05 02216200 Heaven's Sword (throw the weapon straight in front of you, then it comes back to you).
   06 02215EC4 Illusion Fist.
   07 02215FD8 Tori (throw the weapon diagonally upwards, then it comes back to you).
+
 0221F020-0221F06F - List of weapon swing animation types.
   Entry length 8.
   00,1: Y offset to place the weapon at compared to player when the player is crouching. (Signed.)
@@ -897,6 +959,19 @@ TODO: What are the other 2 for? It's not for the "recent" tab.
     For example this affects how hard the pieces of a zombie fly when you kill it.
     This can be negative to make things fly towards you.
   06,2: signed. stored to weapon entity+BE,2 after some modification?
+
+0221F070-0221F10F - List of criticals and combo moves.
+  Entry length 8.
+  00,4: Pointer to code for this move.
+  04,1: Mana cost.
+  05,1: If 0, you must be on the ground to do this combo move. Otherwise you can be in the air.
+  06,2: Unused, probably padding.
+
+0221F110 - List of weapon gfx.
+  Entry length 0xC.
+  00,4: GFX pointer
+  04,4: Sprite pointer
+  08,4: Palette pointer
 
 === 0221F41F: End of Overlay 0
 

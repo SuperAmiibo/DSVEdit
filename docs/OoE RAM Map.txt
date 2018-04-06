@@ -38,12 +38,17 @@
   01,1: ?
   Wygol's entry seems to affect its map somehow, but otherwise this doesn't seem to have any effect.
 
+020B6364-020B7467 - Enemy DNA list.
+
 020D7FB4,4 - Starting X pos on new game.
 020D7FB8,4 - Starting Y pos on new game.
 
 020B6210 - something related to shanoa. changing this area at random seriously affects shanoa, from her physics to her graphics, corrupting everything about her.
 
 020C9854-020D7477 - Most palette data.
+
+020D7478 - List of color tints? These might be used by the slash trails of weapons.
+  Entry length 8?
 
 020D7954-020D7987 - List of what song plays in each sector of Dracula's Castle.
 020D79D8-020D7A27 - List of what song plays in each area (except Dracula's Castle).
@@ -179,6 +184,15 @@
 020F3B7C - List of something related to item IDs?
   It has 37, 50, 6F in the list, which are the last Global ID+1s of arm glyphs, back glyphs, and glyph unions respectively.
 
+020F3BA0 - something related to cerberus glyphs...?
+  used by func 0206AA6C
+  entry length 8
+  04,2: 
+020EEF4C - something related to cerberus glyphs...?
+  entry length 8
+  00,4:
+  04,4:
+
 020F3BC0 - List of GFX for glyphs.
   Entry length 0x10.
   0,2: GFX asset index.
@@ -218,7 +232,7 @@ Requirement lists for fetch quests:
   Then those items are each listed as global item IDs+1. Halfwords.
 Requirement lists for kill quests:
   First halfword is the index in list 02100688, the list of enemies killed for each kill quest.
-  Second halfword is number of the enemy you need to kill.
+  Second halfword is number of that enemy you need to kill.
 
 === 020F6B3F: End of most of ARM9.
 
@@ -260,6 +274,15 @@ Requirement lists for kill quests:
   020FFD42,2 - Unused?
   020FFD44,4 - Bitfield of resistances.
 020FFD48 - Player's current stats.
+  020FFD48,2 - ATK
+  020FFD4A,2 - DEF
+  020FFD4C,2 - STR
+  020FFD4E,2 - CON
+  020FFD50,2 - INT
+  020FFD52,2 - MND
+  020FFD54,2 - LCK
+  020FFD56,2 - Unused?
+  020FFD58,4 - Bitfield of resistances.
 020FFD5C - Player's current stats, with bonus stats added.
   020FFD5C,2 - ATK
   020FFD5E,2 - DEF
@@ -270,6 +293,16 @@ Requirement lists for kill quests:
   020FFD68,2 - LCK
   020FFD6A,2 - Unused?
   020FFD6C,4 - Bitfield of resistances.
+020FFD70 - Player's current bonus stats.
+  020FFD70,2 - ATK
+  020FFD72,2 - DEF
+  020FFD74,2 - STR
+  020FFD76,2 - CON
+  020FFD78,2 - INT
+  020FFD7A,2 - MND
+  020FFD7C,2 - LCK
+  020FFD7E,2 - Unused?
+  020FFD80,4 - Not bonus resistances, instead this is 0 or 1 to indicate whether any bonuses are active.
 
 020FFDDC,4 - Bitfield of damage types that most recently hit the player.
 
@@ -498,6 +531,7 @@ A 200% attack boost (triple) takes 0xFFFF (0d65535) AP.
 02100794,1 - Current difficulty.
   0 - Normal mode.
   1 - Hard mode.
+  Hard mode reduces the damage the player does to enemies to 0.9x.
 02100797,1 - Music volume.
 02100798,1 - SFX volume.
 02100799,1 - Voice volume.
@@ -543,6 +577,11 @@ A 200% attack boost (triple) takes 0xFFFF (0d65535) AP.
 02100124 - x pos to distort towards
 02100128 - y pos to distort towards
 
+02100CCC-02100FEB - List of assets that are currently loaded and where.
+  Entry length 8. 0x64 entries in total.
+  00,4: Asset index. (Or -1 if this slot is currently unused.)
+  04,4: Pointer to where in asset memory the asset data is loaded. (Or 0 if this slot is currently unused.)
+
 02109280,4 - Number of skeletally animated enemies in the current room.
 
 === 021092A0 - 0211DF5F: Entities currently loaded into memory. Each is 0x160 bytes long. They range from 0-F1.
@@ -551,7 +590,9 @@ What each range of entity slots is for:
 00-03  021092A0-0210981F  Used when the game is booting up
 04-04  02109820-0210997F  Player.
 06-06  02109AE0-02109C3F  ?
-08-10  02109DA0-0210A9FF  Player skills.
+08-10  02109DA0-0210A9FF  Player Y-button arm glyphs.
+11-19  0210AA00-0210B65F  Player X-button arm glyphs.
+1A-20  0210B660-0210BFFF  Player back glyphs.
 2A-2A  0210CC60-0210CDBF  ?
 2A-F1  0210CC60-0211DF5F  World map icons. (In practice it uses slots 2B-3D.)
 2D-7C  0210D080-02113E7F  Room entities, including enemies and special objects.

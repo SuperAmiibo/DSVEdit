@@ -242,6 +242,7 @@
     <addaction name="actionItem_Pool_Editor"/>
     <addaction name="actionMagic_Seal_Editor"/>
     <addaction name="actionWeapon_Synth_Editor"/>
+    <addaction name="actionQuest_Editor"/>
    </widget>
    <widget class="QMenu" name="menuBuild">
     <property name="title">
@@ -444,11 +445,6 @@
     <string>编辑地图层</string>
    </property>
   </action>
-  <action name="actionAdd_New_Layer">
-   <property name="text">
-    <string>添加地图层</string>
-   </property>
-  </action>
   <action name="actionMap_Editor">
    <property name="text">
     <string>地图编辑器</string>
@@ -578,6 +574,11 @@
   <action name="actionApply_ARMIPS_Patch">
    <property name="text">
     <string>应用ARMIPS补丁</string>
+   </property>
+  </action>
+  <action name="actionQuest_Editor">
+   <property name="text">
+    <string>Quest Editor</string>
    </property>
   </action>
  </widget>

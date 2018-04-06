@@ -25,9 +25,10 @@ PLATFORMS
 DEPENDENCIES
   nokogiri
   oily_png
-  qtbindings
+  qtbindings (= 4.8.6.3)
+  qtbindings-qt (= 4.8.6.3)
   rubyzip
   unicode_japanese
 
 BUNDLED WITH
-   1.15.0
+   1.16.1
